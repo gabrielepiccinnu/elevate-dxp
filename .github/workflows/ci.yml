@@ -18,13 +18,13 @@ jobs:
     name: Static analysis & code style
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
           extensions: intl, pdo_mysql, gd, zip, bcmath, dom, exif
           coverage: none
-      - uses: ramsey/composer-install@v3
+      - uses: ramsey/composer-install@v4
       - name: Validate composer.json
         run: composer validate --strict --no-check-lock
       - name: PHP-CS-Fixer
@@ -40,13 +40,13 @@ jobs:
       matrix:
         php: ['8.3', '8.4', '8.5']
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
           extensions: intl, pdo_mysql, gd, zip, bcmath, dom, exif
           coverage: none
-      - uses: ramsey/composer-install@v3
+      - uses: ramsey/composer-install@v4
       - run: vendor/bin/phpunit --testsuite unit
 
   integration:
@@ -66,7 +66,7 @@ jobs:
           --health-cmd="healthcheck.sh --connect --innodb_initialized"
           --health-interval=10s --health-timeout=5s --health-retries=12
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
