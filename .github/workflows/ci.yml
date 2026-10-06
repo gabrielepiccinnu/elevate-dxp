@@ -24,7 +24,7 @@ jobs:
           php-version: '8.4'
           extensions: intl, pdo_mysql, gd, zip, bcmath, dom, exif
           coverage: none
-      - uses: ramsey/composer-install@v3
+      - uses: ramsey/composer-install@v4
       - name: Validate composer.json
         run: composer validate --strict --no-check-lock
       - name: PHP-CS-Fixer
@@ -46,7 +46,7 @@ jobs:
           php-version: ${{ matrix.php }}
           extensions: intl, pdo_mysql, gd, zip, bcmath, dom, exif
           coverage: none
-      - uses: ramsey/composer-install@v3
+      - uses: ramsey/composer-install@v4
       - run: vendor/bin/phpunit --testsuite unit
 
   integration:
