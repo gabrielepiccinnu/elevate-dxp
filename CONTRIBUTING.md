@@ -125,10 +125,21 @@ fix(feed): return 404 for tokens shorter than 16 characters
 docs(webhook): document signature verification in n8n
 ```
 
+## Branching model
+
+| Branch | Purpose |
+|---|---|
+| `main` | Stable. Every commit is releasable; releases are tagged here (`v1.0.0`, ...). Only updated by merging `dev` (or a `hotfix/*` branch). |
+| `dev` | Integration branch and default branch. All feature work lands here first; CI must be green. |
+| `feature/*`, `fix/*` | Short-lived topic branches created from `dev`, merged back into `dev` through a pull request. |
+| `hotfix/*` | Urgent fixes created from `main`, merged into `main` and back into `dev`. |
+
+Releasing: open a pull request `dev` → `main`, merge it once CI is green, tag the merge commit and move the `[Unreleased]` section of the CHANGELOG under the new version.
+
 ## Pull requests
 
 1. Open an issue first for larger changes, so the design can be discussed.
-2. Branch from `main`, keep pull requests focused on one topic.
+2. Branch from `dev` (or from `main` for a `hotfix/*`), keep pull requests focused on one topic, and target `dev`.
 3. Make sure `composer test`, `composer stan` and `composer cs` pass.
 4. Describe what changed, why, and how you tested it (unit tests, manual steps in the admin).
 5. Do not include unrelated formatting changes or generated files (`vendor/`, `var/`, caches).
