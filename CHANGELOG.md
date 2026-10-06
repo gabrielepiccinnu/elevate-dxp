@@ -4,7 +4,9 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] (1.0.0-dev)
+## [Unreleased]
+
+## [1.0.0] - 2026-10-07
 
 First release of Elevate DXP as a single bundle (`elevate-dxp/elevate-bundle`, `ElevateDxp\ElevateDxpBundle`) for OpenDXP ^1.4.
 
@@ -42,3 +44,7 @@ First release of Elevate DXP as a single bundle (`elevate-dxp/elevate-bundle`, `
 - **Workflow**: workflow designer with validation, Mermaid preview, BPMN import/export and apply to `opendxp.workflows`.
 - **SSO**: deny-by-default claim-to-role mapping, user provisioning and login decision service.
 - Documentation: README, architecture, configuration reference, module guides, security and privacy, migration from Pimcore.
+- CI: GitHub Actions with static analysis (PHPStan level 6, PHP-CS-Fixer), unit tests on PHP 8.3–8.5 and an integration job that installs the bundle on a fresh OpenDXP application and runs HTTP smoke tests.
+
+[Unreleased]: https://github.com/gabrielepiccinnu/elevate-dxp/compare/v1.0.0...dev
+[1.0.0]: https://github.com/gabrielepiccinnu/elevate-dxp/releases/tag/v1.0.0
