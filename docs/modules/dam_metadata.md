@@ -67,8 +67,8 @@ Read-only grid of the configured schemas ("DAM metadata schemas") with a "Predef
 |---|---|---|
 | `schemas` | | list schemas and fields |
 | `sync` | `[--schema=]` | create the native predefined definitions |
-| `apply` | `--schema --field --value` | set one field, overwriting, on every asset matching the schema (scans from `path_prefix`) |
+| `apply` | `--schema [--field --value] [--overwrite]` | apply to every asset matching the schema (scans from `path_prefix`). With `--field`/`--value` the field is set, overwriting. Without `--field` only missing fields are initialised with their defaults; existing values are replaced only with `--overwrite` |
 | `apply-folder` | `--folder --schema [--field --value] [--overwrite]` | bulk apply as described above; `--folder` defaults to `/` |
 | `show` | `--asset=<id>` | show an asset's metadata |
 
-The CLI does not check user permissions. Note that `apply` without `--field` initialises every field with a default and overwrites existing values.
+The CLI does not check user permissions. `apply --schema=<name>` without `--field` never overwrites existing values unless `--overwrite` is given (same default as the admin *Apply to folder* action); the result reports updated and unchanged assets.

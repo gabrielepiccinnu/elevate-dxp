@@ -21,7 +21,7 @@ final class Configuration implements ConfigurationInterface
                         ->integerNode('sample_limit')->defaultValue(500)->min(1)->end()
                         ->arrayNode('profiles')
                             ->info('DataObject class => required fields, e.g. Product: [sku, name, price, image]')
-                            ->useAttributeAsKey('class')
+                            ->useAttributeAsKey('class')->normalizeKeys(false)
                             ->arrayPrototype()->scalarPrototype()->end()->end()
                         ->end()
                     ->end()

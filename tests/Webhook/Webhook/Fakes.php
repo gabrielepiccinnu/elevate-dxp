@@ -70,8 +70,8 @@ final class Fakes
     }
 
     /** Bus recording dispatched messages; optionally throws to emulate a failing sync:// delivery. */
-    public static function bus(?\Throwable $throw = null): RecordingMessageBus
+    public static function bus(?\Throwable $throw = null, bool $handled = false): RecordingMessageBus
     {
-        return new RecordingMessageBus($throw);
+        return new RecordingMessageBus($throw, $handled);
     }
 }

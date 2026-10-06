@@ -60,4 +60,26 @@ final class ReflectiveFieldMapperTest extends TestCase
         self::assertNull($out['rel']);
         self::assertNull($out['missing']);
     }
+
+    public function testOnlyReadAccessorsAreCalled(): void
+    {
+        $source = new class {
+            public bool $deleted = false;
+
+            public function isPublished(): bool
+            {
+                return true;
+            }
+
+            public function delete(): string
+            {
+                $this->deleted = true;
+
+                return 'boom';
+            }
+        };
+        $out = (new ReflectiveFieldMapper())->map($source, ['published' => 'published', 'x' => 'delete', 'y' => 'bad name()']);
+        self::assertSame(['published' => true, 'x' => null, 'y' => null], $out);
+        self::assertFalse($source->deleted);
+    }
 }

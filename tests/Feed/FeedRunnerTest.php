@@ -83,6 +83,7 @@ final class FeedRunnerTest extends TestCase
             $this->audit,
             100,
             $enabled,
+            $this->dir,
         );
     }
 
@@ -112,6 +113,48 @@ final class FeedRunnerTest extends TestCase
 
         $csv = $this->runner()->export('csv');
         self::assertSame($this->dir.'/out/feeds/catalog.csv', $csv['location']);
+    }
+
+    public function testConcurrentExportOfTheSameFeedIsRefused(): void
+    {
+        $runner = $this->runner();
+        $lockFile = $runner->lockFile('google');
+        self::assertSame($this->dir.'/edxp_feed_google.lock', $lockFile);
+
+        // another process (here: another handle) holds the lock
+        $other = fopen($lockFile, 'c');
+        self::assertNotFalse($other);
+        self::assertTrue(flock($other, \LOCK_EX | \LOCK_NB));
+        try {
+            $runner->export('google');
+            self::fail('Expected "already being exported"');
+        } catch (\RuntimeException $e) {
+            self::assertStringContainsString('already being exported', $e->getMessage());
+        }
+        self::assertSame([], $this->reader->calls, 'nothing is read while another export runs');
+
+        // a different feed is not blocked
+        self::assertSame(2, $runner->export('csv')['rows']);
+
+        flock($other, \LOCK_UN);
+        fclose($other);
+        self::assertSame(2, $runner->export('google')['rows'], 'the lock is free again');
+    }
+
+    public function testLockIsReleasedWhenTheExportFails(): void
+    {
+        $feeds = (new \ReflectionProperty(FeedRunner::class, 'feeds'))->getValue($this->runner());
+        $runner = new FeedRunner($feeds, $this->reader, new FeedValidator(),
+            new ServiceLocator(['google_merchant' => static fn () => new GoogleMerchantTemplate()]),
+            new ServiceLocator([]), $this->audit, 100, true, $this->dir);
+        foreach ([1, 2] as $attempt) {
+            try {
+                $runner->export('google');
+                self::fail('Expected missing target');
+            } catch (\RuntimeException $e) {
+                self::assertStringContainsString('No export target', $e->getMessage(), 'attempt '.$attempt.' is not blocked by a stale lock');
+            }
+        }
     }
 
     public function testDisabledAndUnknown(): void

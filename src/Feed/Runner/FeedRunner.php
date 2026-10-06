@@ -12,7 +12,13 @@ use ElevateDxp\Feed\Template\FeedTemplateInterface;
 use ElevateDxp\Feed\Validator\FeedValidator;
 use Psr\Container\ContainerInterface;
 
-/** Builds feed rows from a source, validates and renders them, optionally writing via an export target. */
+/**
+ * Builds feed rows from a source, validates and renders them, optionally writing via an export target.
+ *
+ * export() holds an exclusive, non-blocking per-feed lock (flock, same mechanism as the Export
+ * module's runner) so two concurrent exports of the same feed never interleave their writes; the
+ * second one fails fast with "already running".
+ */
 final class FeedRunner
 {
     /**
@@ -29,6 +35,7 @@ final class FeedRunner
         private readonly AuditLoggerInterface $audit,
         private readonly int $chunkSize = 100,
         private readonly bool $enabled = true,
+        private readonly ?string $lockDir = null,
     ) {
     }
 
@@ -150,9 +157,10 @@ final class FeedRunner
     public function export(string $feedName, string $actor = 'cli'): array
     {
         if (!$this->enabled) {
-            throw new \RuntimeException('The feed bundle is disabled (elevate_dxp_feed.enabled: false).');
+            throw new \RuntimeException('The feed bundle is disabled (elevate_dxp.feed.enabled: false).');
         }
         $feed = $this->feed($feedName);
+        $lock = $this->acquireLock($feedName);
         try {
             $rendered = $this->render($feedName);
             $targetType = (string) ($feed['target']['type'] ?? 'local');
@@ -169,6 +177,9 @@ final class FeedRunner
         } catch (\Throwable $e) {
             $this->audit->log(new AuditEvent('feed.'.$feedName, $actor, 'failure', ['error' => $e->getMessage()]));
             throw $e;
+        } finally {
+            flock($lock, \LOCK_UN);
+            fclose($lock);
         }
 
         $this->audit->log(new AuditEvent('feed.'.$feedName, $actor, 'export', [
@@ -176,6 +187,31 @@ final class FeedRunner
         ]));
 
         return ['rows' => $rendered['rows'], 'issues' => $rendered['issues'], 'location' => $location];
+    }
+
+    /** Lock file of a feed export (one per feed name). */
+    public function lockFile(string $feedName): string
+    {
+        return rtrim($this->lockDir ?? sys_get_temp_dir(), '/').'/edxp_feed_'.preg_replace('/[^a-z0-9_]/i', '_', $feedName).'.lock';
+    }
+
+    /**
+     * @return resource
+     *
+     * @throws \RuntimeException when the lock cannot be opened or another export of the feed is running
+     */
+    private function acquireLock(string $feedName)
+    {
+        $handle = @fopen($this->lockFile($feedName), 'c');
+        if ($handle === false) {
+            throw new \RuntimeException(\sprintf('Cannot open lock file for feed "%s".', $feedName));
+        }
+        if (!flock($handle, \LOCK_EX | \LOCK_NB)) {
+            fclose($handle);
+            throw new \RuntimeException(\sprintf('Feed "%s" is already being exported.', $feedName));
+        }
+
+        return $handle;
     }
 
     /**

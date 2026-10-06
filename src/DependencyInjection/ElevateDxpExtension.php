@@ -20,9 +20,15 @@ final class ElevateDxpExtension extends Extension implements PrependExtensionInt
     public function load(array $configs, ContainerBuilder $container): void
     {
         $config = $this->processConfiguration(new Configuration(), $configs);
+        $enabled = [];
         foreach (Modules::all() as $module) {
             $module->load($config[$module->key()], $container);
+            // ElevateDxp\<Segment>\DependencyInjection\XModule => <Segment>
+            $segment = explode('\\', $module::class)[1];
+            $enabled[$segment] = (bool) ($config[$module->key()]['enabled'] ?? true);
         }
+        // Admin resources of disabled modules are hidden from the menu and refused by the API.
+        $container->setParameter('elevate_dxp.enabled_modules', $enabled);
     }
 
     public function getAlias(): string

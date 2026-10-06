@@ -60,7 +60,7 @@ final class ReportRunner
         $sql = $this->guardedSql($name);
         $limit = max(1, min($limit ?? $this->maxRows, $this->maxRows));
 
-        $rows = $this->readOnly(fn (): array => $this->db->fetchAllAssociative($sql));
+        $rows = $this->readOnly(fn (): array => $this->fetchBounded($sql, $limit + 1));
         $truncated = \count($rows) > $limit;
         if ($truncated) {
             $rows = \array_slice($rows, 0, $limit);
@@ -89,6 +89,34 @@ final class ReportRunner
         $row = $this->readOnly(fn (): array|false => $this->db->fetchAssociative($sql));
 
         return \is_array($row) ? array_map('strval', array_keys($row)) : [];
+    }
+
+    /**
+     * Fetches at most $max rows. SELECT queries are wrapped as a derived table with a LIMIT so the
+     * database never returns more than $max rows; WITH queries are streamed and stopped after $max rows.
+     *
+     * @return list<array<string,mixed>>
+     */
+    private function fetchBounded(string $sql, int $max): array
+    {
+        if (str_starts_with(strtolower($sql), 'select')) {
+            return array_values($this->db->fetchAllAssociative(self::limitSql($sql, $max)));
+        }
+        $rows = [];
+        foreach ($this->db->iterateAssociative($sql) as $row) {
+            $rows[] = $row;
+            if (\count($rows) >= $max) {
+                break;
+            }
+        }
+
+        return $rows;
+    }
+
+    /** Wraps a guarded SELECT as a derived table capped at $max rows. */
+    public static function limitSql(string $sql, int $max): string
+    {
+        return 'SELECT * FROM ('.$sql.') AS edxp_q LIMIT '.max(1, $max);
     }
 
     private function guardedSql(string $name): string

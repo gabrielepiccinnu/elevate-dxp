@@ -88,4 +88,4 @@ bin/console elevate-dxp:feed:preview <feed> [--limit=10]   # rows + validation i
 bin/console elevate-dxp:feed:export <feed>                 # render and write to the target
 ```
 
-Exports are audited as `feed.<name>` with status `export` (rows, issues, location) or `failure`. Unlike export jobs, feed exports take no lock.
+Exports are audited as `feed.<name>` with status `export` (rows, issues, location) or `failure`. Like export jobs, a feed export takes an exclusive, non-blocking lock per feed (`flock` on `edxp_feed_<name>.lock` in the system temp dir): a second export of the same feed, from the CLI or the admin, fails immediately with "already being exported" instead of interleaving its writes. Different feeds run in parallel. The lock is per host; the public feed URL only renders and takes no lock.

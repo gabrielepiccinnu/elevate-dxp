@@ -51,7 +51,7 @@ final class Configuration implements ConfigurationInterface
                             ->defaultValue(['key'])
                         ->end()
                         ->arrayNode('object_fields')
-                            ->useAttributeAsKey('class')
+                            ->useAttributeAsKey('class')->normalizeKeys(false)
                             ->arrayPrototype()->scalarPrototype()->end()->end()
                             ->defaultValue([])
                             ->info('Per-class searchable fields, e.g. {Product: [name, sku]}. Falls back to default_object_fields.')

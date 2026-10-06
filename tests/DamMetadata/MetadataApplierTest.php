@@ -45,6 +45,24 @@ final class MetadataApplierTest extends TestCase
         self::assertSame("Unknown field 'g' in schema 's'.", $applier->apply('s', 'g', '1')['error'], 'schema-wide apply() entry point');
     }
 
+    public function testSchemaDefaultsDoNotOverwriteWithoutExplicitFlag(): void
+    {
+        self::assertFalse(MetadataApplier::resolveOverwrite(null, false), 'apply --schema=x only initialises missing fields');
+        self::assertFalse(MetadataApplier::resolveOverwrite('', false));
+        self::assertTrue(MetadataApplier::resolveOverwrite(null, true), '--overwrite replaces existing values');
+        self::assertTrue(MetadataApplier::resolveOverwrite('f', false), 'an explicit --field/--value is an assignment');
+
+        // the resulting plan keeps existing values and only fills the missing defaults
+        $s = new SchemaService(['s' => ['fields' => [
+            ['name' => 'a', 'type' => 'input', 'default' => 'x'],
+            ['name' => 'b', 'type' => 'input', 'default' => 'y'],
+        ]]]);
+        $plan = $s->plan('s', ['a'], null, null, MetadataApplier::resolveOverwrite(null, false));
+        self::assertSame(['b'], array_column($plan, 'name'));
+        $plan = $s->plan('s', ['a'], null, null, MetadataApplier::resolveOverwrite(null, true));
+        self::assertSame(['a', 'b'], array_column($plan, 'name'));
+    }
+
     public function testSummary(): void
     {
         self::assertSame('Matched 3 asset(s): updated 1, unchanged 1, denied 1, failed 0.',

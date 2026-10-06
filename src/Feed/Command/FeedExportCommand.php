@@ -22,7 +22,7 @@ final class FeedExportCommand extends Command
 
     protected function configure(): void
     {
-        $this->addArgument('feed', InputArgument::REQUIRED, 'Feed name from elevate_dxp_feed.feeds');
+        $this->addArgument('feed', InputArgument::REQUIRED, 'Feed name from elevate_dxp.feed.feeds');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int

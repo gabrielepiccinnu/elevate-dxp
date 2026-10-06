@@ -80,20 +80,23 @@ To verify on the receiver, recompute the HMAC over the raw body with the shared 
 Both resources are read-only grids.
 
 - **Webhook subscriptions** (`webhook_subscriptions`): name, active flag, URL, events and an "HMAC signed" flag. The secret is never shown.
-  - *Send test* (record): choose the event and the mode. *Now* delivers synchronously and shows the HTTP result. *Queue* dispatches through Messenger and is refused for inactive subscriptions.
+  - *Send test* (record): choose the event and the mode. *Now* delivers synchronously and shows the HTTP result. *Queue* dispatches through Messenger and is refused for inactive subscriptions; with the `sync://` transport the result reports "delivered" or "failed", otherwise "queued".
   - *Dispatch test event to all* (global): sends a test event to every active subscription that listens to it. Refused when `enabled: false`.
 - **Webhook deliveries** (`webhook_deliveries`): the delivery log (time, subscription, event, status, HTTP status, URL, error, payload).
   - Filters: status, subscription, event. The search box also accepts `failed`, `delivered`, `status:<value>`, `subscription:<name>` and `event:<key>`.
-  - *Re-deliver* (record): re-sends the stored event and payload to the current URL and secret of the subscription. Refused if the subscription no longer exists or is inactive.
+  - *Re-deliver* (record): re-sends the stored event and payload to the current URL and secret of the subscription. Refused if the subscription no longer exists or is inactive. With the `sync://` transport the delivery runs inline and the message reports the actual outcome ("delivered" or "failed: <reason>"); with an async transport it reports "queued".
 
 ## CLI
 
 ```
 bin/console elevate-dxp:webhook:test <subscription> [--event=object.update] [--async]
+bin/console elevate-dxp:webhook:prune [--days=30] [--dry-run]
 bin/console elevate-dxp:webhook:install
 ```
 
-`webhook:test` delivers synchronously and exits non-zero on failure. With `--async` it only queues the message. Unlike the admin, it does not check whether the subscription is active, so the handler skips a queued test for an inactive subscription.
+`webhook:test` delivers synchronously and exits non-zero on failure. With `--async` it dispatches through Messenger: unknown and inactive subscriptions are refused (as in the admin), and the command reports "delivered" or "failed" when the `sync://` transport runs the delivery inline, "queued" otherwise.
+
+`webhook:prune` deletes `edxp_webhook_delivery` rows older than `--days` (default 30), in chunks of 1000 rows; `--dry-run` only counts them. It is idempotent: schedule it (for example daily from cron) to keep the log, which stores payloads, bounded.
 
 ## Debug sink
 

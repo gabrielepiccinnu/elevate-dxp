@@ -33,7 +33,7 @@ final class N8nExportCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
         if (!$this->generator->isEnabled()) {
-            $io->error('Automation is disabled (elevate_dxp_automation.enabled: false).');
+            $io->error('Automation is disabled (elevate_dxp.automation.enabled: false).');
 
             return Command::FAILURE;
         }

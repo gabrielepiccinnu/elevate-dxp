@@ -12,8 +12,8 @@ use Symfony\Component\Routing\Attribute\Route;
 /**
  * Local debug receiver: appends incoming webhooks to var/elevate-dxp/webhook-sink.log for verification.
  *
- * TESTING ONLY. Disabled by default (elevate_dxp_webhook.sink_enabled=false → 404, deny-by-default).
- * When elevate_dxp_webhook.sink_secret is set the HMAC signature is verified and a mismatch answers 401.
+ * TESTING ONLY. Disabled by default (elevate_dxp.webhook.sink_enabled=false → 404, deny-by-default).
+ * When elevate_dxp.webhook.sink_secret is set the HMAC signature is verified and a mismatch answers 401.
  * Logged bodies are capped so the public endpoint cannot be used to fill the disk quickly.
  */
 final class WebhookSinkController

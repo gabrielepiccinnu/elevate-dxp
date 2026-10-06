@@ -13,7 +13,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-/** Seeds elevate_dxp_statistics.reports as native OpenDXP Custom Reports. Idempotent. */
+/** Seeds elevate_dxp.statistics.reports as native OpenDXP Custom Reports. Idempotent. */
 #[AsCommand(name: 'elevate-dxp:statistics:seed-native', description: 'Create the configured statistics reports as native Custom Reports (idempotent)')]
 final class StatisticsSeedNativeCommand extends Command
 {

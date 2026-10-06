@@ -23,7 +23,7 @@ final class Configuration implements ConfigurationInterface
                     ->info('Optional: when set, the sink verifies X-ElevateDxp-Signature and answers 401 on mismatch.')->end()
                 ->integerNode('timeout')->defaultValue(5)->min(1)->max(60)->end()
                 ->arrayNode('subscriptions')
-                    ->useAttributeAsKey('name')
+                    ->useAttributeAsKey('name')->normalizeKeys(false)
                     ->arrayPrototype()
                         ->children()
                             ->booleanNode('active')->defaultTrue()->end()

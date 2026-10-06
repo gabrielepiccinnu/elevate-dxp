@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ElevateDxp\Core\Admin;
 
 use OpenDxp\Model\User;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 
 final class AdminResourceRegistry
@@ -14,10 +15,17 @@ final class AdminResourceRegistry
 
     /**
      * @param iterable<AdminResourceInterface> $resources
+     * @param array<string, bool>              $enabledModules module namespace segment (e.g. "Portal") => enabled
      */
-    public function __construct(#[AutowireIterator(AdminResourceInterface::TAG)] iterable $resources)
-    {
+    public function __construct(
+        #[AutowireIterator(AdminResourceInterface::TAG)] iterable $resources,
+        #[Autowire('%elevate_dxp.enabled_modules%')] array $enabledModules = [],
+    ) {
         foreach ($resources as $resource) {
+            $segment = explode('\\', $resource::class)[1] ?? '';
+            if (($enabledModules[$segment] ?? true) === false) {
+                continue;
+            }
             $this->resources[$resource->getKey()] = $resource;
         }
         ksort($this->resources);

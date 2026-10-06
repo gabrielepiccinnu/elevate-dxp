@@ -10,7 +10,7 @@ services:
             - '../../src/Automation/DependencyInjection/'
 
 
-    # Reads the webhook bundle configuration (ElevateDxpWebhookBundle is a dependent bundle).
+    # Reads the webhook module configuration (elevate_dxp.webhook.subscriptions) and elevate_dxp.automation.enabled.
     ElevateDxp\Automation\N8n\N8nBlueprintGenerator:
         arguments:
             $webhookSubscriptions: '%elevate_dxp_webhook.subscriptions%'

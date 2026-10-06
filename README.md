@@ -85,7 +85,7 @@ bin/console assets:install public
 bin/console cache:clear
 ```
 
-`opendxp:bundle:install ElevateDxpBundle` creates every `edxp_*` table with idempotent DDL. It also registers the admin permissions in the category "Elevate DXP". Grant them to roles in *Settings → Users & Roles*. Admin users always have access.
+`opendxp:bundle:install ElevateDxpBundle` creates every `edxp_*` table with idempotent DDL. It also registers the admin permissions in the category "Elevate DXP". Grant them to roles in *Settings → Users & Roles*. Admin users always have access. On later deployments run `bin/console elevate-dxp:setup`: it is idempotent and adds tables and permissions introduced by newer versions.
 
 Check the result:
 

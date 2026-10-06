@@ -61,6 +61,33 @@ final class WebhookDeliveryRepository implements DeliveryRecorderInterface
     }
 
     /**
+     * Deletes delivery rows created before $before, in chunks of $chunkSize rows so a large log
+     * never holds a long table lock. Idempotent.
+     *
+     * @return int number of deleted rows
+     */
+    public function prune(\DateTimeInterface $before, int $chunkSize = 1000): int
+    {
+        $chunkSize = max(1, $chunkSize);
+        $total = 0;
+        do {
+            $deleted = (int) $this->db->executeStatement(
+                'DELETE FROM '.self::TABLE.' WHERE created_at < ? ORDER BY id LIMIT '.$chunkSize,
+                [$before->format('Y-m-d H:i:s')],
+            );
+            $total += $deleted;
+        } while ($deleted >= $chunkSize);
+
+        return $total;
+    }
+
+    /** Number of delivery rows created before $before (for --dry-run). */
+    public function countBefore(\DateTimeInterface $before): int
+    {
+        return (int) $this->db->fetchOne('SELECT COUNT(*) FROM '.self::TABLE.' WHERE created_at < ?', [$before->format('Y-m-d H:i:s')]);
+    }
+
+    /**
      * @param array<string, mixed> $row stored delivery row
      *
      * @return array<string,mixed> decoded payload of a stored delivery

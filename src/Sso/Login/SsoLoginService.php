@@ -7,6 +7,7 @@ namespace ElevateDxp\Sso\Login;
 use ElevateDxp\Sso\Identity\IdentityDescriptor;
 use ElevateDxp\Sso\Identity\IdentityMapperInterface;
 use ElevateDxp\Sso\Provisioning\OpenDxpUserProvisioner;
+use ElevateDxp\Sso\Provisioning\RolePlan;
 use ElevateDxp\Sso\Provisioning\UserDirectory;
 use OpenDxp\Model\User;
 
@@ -17,9 +18,10 @@ use OpenDxp\Model\User;
  * Decision order (deny-by-default):
  *  1. SSO disabled                         → deny
  *  2. no identifier or no mapped role      → deny
- *  3. user missing and JIT disabled        → deny
- *  4. existing user deactivated by an admin→ deny (SSO never re-activates a disabled account)
- *  5. otherwise upsert user + sync roles   → allow
+ *  3. mapped roles grant nothing (none of them exists in OpenDXP and no admin alias) → deny
+ *  4. user missing and JIT disabled        → deny
+ *  5. existing user deactivated by an admin→ deny (SSO never re-activates a disabled account)
+ *  6. otherwise upsert user + sync roles   → allow
  */
 class SsoLoginService
 {
@@ -37,7 +39,7 @@ class SsoLoginService
     {
         $identity = $this->mapper->mapClaims($claims);
         if (!$this->enabled) {
-            return SsoDecision::deny($identity, 'SSO is disabled (elevate_dxp_sso.enabled: false).');
+            return SsoDecision::deny($identity, 'SSO is disabled (elevate_dxp.sso.enabled: false).');
         }
 
         return $this->decideFor($identity, $this->directory->findUser($identity->identifier));
@@ -53,6 +55,9 @@ class SsoLoginService
         if (!$identity->isAuthorized()) {
             return SsoDecision::deny($identity, 'No IdP group is mapped to a role (deny-by-default).');
         }
+        if (!$this->grantsAnything($identity)) {
+            return SsoDecision::deny($identity, 'None of the mapped roles exists in OpenDXP (deny-by-default).');
+        }
         if ($existing === null && !$jit) {
             return SsoDecision::deny($identity, 'User does not exist and JIT provisioning is disabled.');
         }
@@ -61,6 +66,22 @@ class SsoLoginService
         }
 
         return SsoDecision::allow($identity, $existing === null ? 'User will be created (JIT) and roles synced.' : 'Existing user; roles will be synced.');
+    }
+
+    /** True when the identity sets the admin flag or maps to at least one existing OpenDXP role. */
+    private function grantsAnything(IdentityDescriptor $identity): bool
+    {
+        $plan = RolePlan::fromIdentity($identity);
+        if ($plan->admin) {
+            return true;
+        }
+        foreach ($plan->roleNames as $name) {
+            if ($this->directory->roleId($name) !== null) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

@@ -22,14 +22,20 @@ final class ReflectiveFieldMapper implements FieldMapperInterface
         return $out;
     }
 
+    /**
+     * Only read accessors are ever called (getX(), isX(), hasX()), so a configuration typo or a
+     * malicious mapping such as "delete" can never trigger a state-changing method.
+     */
     private function resolve(object $source, string $accessor): mixed
     {
-        $getter = 'get'.ucfirst($accessor);
-        if (method_exists($source, $getter)) {
-            return $source->{$getter}();
+        if (preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $accessor) !== 1) {
+            return null;
         }
-        if (method_exists($source, $accessor)) {
-            return $source->{$accessor}();
+        foreach (['get', 'is', 'has'] as $prefix) {
+            $method = $prefix.ucfirst($accessor);
+            if (method_exists($source, $method)) {
+                return $source->{$method}();
+            }
         }
 
         return null;

@@ -13,10 +13,11 @@ use ElevateDxp\Webhook\Webhook\TestPayload;
 use ElevateDxp\Webhook\Webhook\WebhookDispatcher;
 use ElevateDxp\Webhook\Webhook\WebhookEvents;
 use ElevateDxp\Webhook\Webhook\WebhookSender;
+use Symfony\Component\Messenger\Exception\HandlerFailedException;
 
 /**
  * Config-backed, read-only list of webhook subscriptions (edit them in YAML under
- * elevate_dxp_webhook.subscriptions) with "send test" actions. Secrets are never exposed.
+ * elevate_dxp.webhook.subscriptions) with "send test" actions. Secrets are never exposed.
  */
 final class WebhookSubscriptionResource extends AbstractAdminResource
 {
@@ -124,9 +125,18 @@ final class WebhookSubscriptionResource extends AbstractAdminResource
             if (!$this->subscriptions->isActive($name)) {
                 throw new \InvalidArgumentException(\sprintf('Subscription "%s" is inactive: queued deliveries are skipped. Use synchronous mode to test it.', $name));
             }
-            $this->dispatcher->dispatchTo($name, $event, $payload);
+            try {
+                $outcome = $this->dispatcher->dispatchTo($name, $event, $payload);
+            } catch (\Throwable $e) {
+                // sync:// transport: the delivery ran inline and failed; the attempt is in the log.
+                $cause = $e instanceof HandlerFailedException ? ($e->getPrevious() ?? $e) : $e;
 
-            return Action::message(\sprintf('Test "%s" queued for "%s". See the delivery log.', $event, $name));
+                return Action::message(\sprintf('Test "%s" to "%s" failed: %s', $event, $name, $cause->getMessage()));
+            }
+
+            return Action::message($outcome === WebhookDispatcher::OUTCOME_DELIVERED
+                ? \sprintf('Test "%s" to "%s" delivered (inline, sync transport).', $event, $name)
+                : \sprintf('Test "%s" queued for "%s". See the delivery log.', $event, $name));
         }
 
         $result = $this->sender->deliver($name, $subscription, $event, $payload);
@@ -142,7 +152,7 @@ final class WebhookSubscriptionResource extends AbstractAdminResource
     private function dispatchTest(array $params): array
     {
         if (!$this->subscriptions->isEnabled()) {
-            throw new \InvalidArgumentException('Webhooks are disabled (elevate_dxp_webhook.enabled: false).');
+            throw new \InvalidArgumentException('Webhooks are disabled (elevate_dxp.webhook.enabled: false).');
         }
         $event = $this->event($params);
         $count = $this->dispatcher->dispatch($event, TestPayload::create($event, 'admin'));

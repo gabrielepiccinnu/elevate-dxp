@@ -11,8 +11,8 @@ Put your settings in any file under `config/packages/` (for example `config/pack
 
 ## General rules
 
-- **Map keys are normalised.** Symfony converts `-` to `_` in the keys of configuration maps. A feed named `google-shopping` becomes `google_shopping` (and so does its public URL); an SSO group `dxp-admins` in `role_mapping` becomes `dxp_admins` and will not match an IdP group spelled with a hyphen. Use underscores in names you define: feeds, export jobs, datahub endpoints and their `fields` keys, statistics reports, webhook subscriptions, DAM schemas, SSO providers and `role_mapping` keys, portal `object_fields` classes.
-- **`enabled` flags differ per module.** Services are always registered. The table below lists what `enabled: false` does. To hide a module from editors, do not grant its permission.
+- **Map keys are kept as written.** Names you define (feeds, export jobs, datahub endpoints and their `fields`, statistics reports, webhook subscriptions, DAM schemas, SSO providers and `role_mapping` keys, portal `object_fields` classes) keep hyphens: `google-shopping` stays `google-shopping`, and an SSO group `dxp-admins` matches the IdP group exactly.
+- **`enabled: false` hides a module from editors.** Its admin resources disappear from the *Elevate DXP* menu and the admin API answers 404 for them. Services stay registered, so console commands keep working; the table lists the additional runtime effect per module. Permissions remain the way to give access to some editors only.
 
 | Module | Effect of `enabled: false` |
 |---|---|
@@ -24,7 +24,7 @@ Put your settings in any file under `config/packages/` (for example `config/pack
 | `automation` | Admin list empty; blueprint generation refused |
 | `statistics` | Per-report panels not registered (catalogue, CLI and seeding still work) |
 | `sso` | Every SSO login denied (default: `false`) |
-| `portal`, `workflow`, `dam_metadata`, `translation` | Currently not read |
+| `portal`, `workflow`, `dam_metadata`, `translation` | Admin resources hidden (no further runtime effect) |
 
 ## Environment variables
 
@@ -303,7 +303,7 @@ elevate_dxp:
 | Option | Default | Description |
 |---|---|---|
 | `enabled` | `true` | See table above |
-| `max_rows` | `1000` | Rows returned to the admin per run (min 1) |
+| `max_rows` | `1000` | Maximum rows fetched from the database and shown per run (min 1); `SELECT` reports are wrapped with a `LIMIT` |
 | `report_panels` | `true` | One admin report panel per report |
 | `reports.<name>.label` | `''` | |
 | `reports.<name>.sql` | required | A single read-only `SELECT`/`WITH` statement |
@@ -332,7 +332,7 @@ elevate_dxp:
 
 | Option | Default | Description |
 |---|---|---|
-| `enabled` | `true` | Currently not read |
+| `enabled` | `true` | `false` hides the module's admin resources |
 | `batch_size` | `200` | Assets per batch in bulk apply (min 1) |
 | `schemas.<name>.label` | `''` | |
 | `schemas.<name>.path_prefix` | `/` | Applies to assets whose full path starts with this string |
@@ -362,7 +362,7 @@ elevate_dxp:
 
 | Option | Default | Description |
 |---|---|---|
-| `enabled` | `true` | Currently not read |
+| `enabled` | `true` | `false` hides the module's admin resources |
 | `provider` | `pseudo` | Default provider key; unknown keys fall back to `pseudo` |
 | `languages` | `[en, it, de, fr, es, pt, nl]` | Languages offered in admin dialogs |
 | `libretranslate.url` | `http://libretranslate:5000` | Must be http(s) |
@@ -404,7 +404,7 @@ elevate_dxp:
 
 | Option | Default | Description |
 |---|---|---|
-| `enabled` | `true` | Currently not read |
+| `enabled` | `true` | `false` hides the module's admin resources |
 | `products_class` | `Product` | Default class for object searches |
 | `object_image_field` | `image` | Object field whose asset goes into ZIP downloads |
 | `allowed_asset_paths` | `['/products']` | Deny-by-default allow-list for downloads and guest shares (folder boundaries) |
@@ -434,7 +434,7 @@ elevate_dxp:
 
 | Option | Default | Description |
 |---|---|---|
-| `enabled` | `true` | Currently not read |
+| `enabled` | `true` | `false` hides the module's admin resources |
 | `storage_dir` | `var/elevate-dxp/workflows` | Designer definitions (YAML), relative to the project dir |
 | `apply_dir` | `config/local` | Where *Apply* writes `elevate_dxp_workflow_<name>.yaml`; must be imported by your config |
 | `mermaid_render_url` | `https://mermaid.ink/svg/` | External renderer for previews; `null` = no external call |
@@ -471,4 +471,4 @@ elevate_dxp:
 | `providers.<name>.type` | `oidc` | Only `oidc` |
 | `providers.<name>.issuer` / `client_id` / `client_secret` | `''` | IdP settings for your login integration |
 | `providers.<name>.scopes` | `[openid, email, profile, groups]` | |
-| `providers.<name>.role_mapping` | `{}` | IdP group → OpenDXP role name, or `admin` for the admin flag. Unmapped groups grant nothing. Keys are normalised (`-` → `_`) |
+| `providers.<name>.role_mapping` | `{}` | IdP group → OpenDXP role name, or `admin` for the admin flag. Unmapped groups grant nothing. Keys are matched exactly (hyphens are kept) |

@@ -89,7 +89,7 @@ final class N8nBlueprintResource extends AbstractAdminResource
             return parent::runAction($action, $id, $params);
         }
         if (!$this->generator->isEnabled()) {
-            throw new \InvalidArgumentException('Automation is disabled (elevate_dxp_automation.enabled: false).');
+            throw new \InvalidArgumentException('Automation is disabled (elevate_dxp.automation.enabled: false).');
         }
         $blueprint = $id !== null ? $this->generator->fromWebhook($id) : null;
         if ($blueprint === null) {

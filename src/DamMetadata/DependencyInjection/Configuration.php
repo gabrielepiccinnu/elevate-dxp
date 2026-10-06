@@ -18,7 +18,7 @@ final class Configuration implements ConfigurationInterface
                 ->booleanNode('enabled')->defaultTrue()->end()
                 ->integerNode('batch_size')->defaultValue(200)->min(1)->info('Assets loaded per batch during bulk apply.')->end()
                 ->arrayNode('schemas')
-                    ->useAttributeAsKey('name')
+                    ->useAttributeAsKey('name')->normalizeKeys(false)
                     ->arrayPrototype()
                         ->children()
                             ->scalarNode('label')->defaultValue('')->end()

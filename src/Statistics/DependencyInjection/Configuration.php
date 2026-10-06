@@ -20,7 +20,7 @@ final class Configuration implements ConfigurationInterface
                 ->booleanNode('report_panels')->defaultTrue()
                     ->info('Register one admin "report" panel per configured report (in addition to the catalogue).')->end()
                 ->arrayNode('reports')
-                    ->useAttributeAsKey('name')
+                    ->useAttributeAsKey('name')->normalizeKeys(false)
                     ->validate()
                         ->ifTrue(static fn (array $r): bool => array_filter(array_keys($r), static fn ($k): bool => !preg_match('/^[A-Za-z0-9_-]+$/', (string) $k)) !== [])
                         ->thenInvalid('Report names may only contain letters, digits, "_" and "-".')

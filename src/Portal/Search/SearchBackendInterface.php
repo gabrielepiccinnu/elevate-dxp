@@ -9,7 +9,7 @@ namespace ElevateDxp\Portal\Search;
  *
  * The default implementation is {@see ListingSearchBackend} (plain OpenDXP listings, SQL LIKE).
  * A richer engine (e.g. an AdvancedObjectSearch / OpenSearch based one) only has to implement this
- * interface; autoconfiguration tags it and `elevate_dxp_portal.search.backend: <name>` selects it.
+ * interface; autoconfiguration tags it and `elevate_dxp.portal.search.backend: <name>` selects it.
  * When the selected backend does not support a query, the service falls back to any backend that does.
  */
 interface SearchBackendInterface

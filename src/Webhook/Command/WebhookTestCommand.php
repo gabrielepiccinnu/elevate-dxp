@@ -15,6 +15,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\Messenger\Exception\HandlerFailedException;
 
 #[AsCommand(name: 'elevate-dxp:webhook:test', description: 'Send a test webhook to a configured subscription (sync or --async)')]
 final class WebhookTestCommand extends Command
@@ -54,8 +55,22 @@ final class WebhookTestCommand extends Command
         $payload = TestPayload::create($event, 'cli');
 
         if ($input->getOption('async')) {
-            $this->dispatcher->dispatchTo($name, $event, $payload);
-            $io->success("Webhook '$name' queued (event=$event). Consume the elevate_dxp transport to deliver.");
+            if (($sub['active'] ?? true) !== true) {
+                $io->error("Subscription '$name' is inactive: the worker would drop the message. Activate it, or test it synchronously (without --async).");
+
+                return Command::INVALID;
+            }
+            try {
+                $outcome = $this->dispatcher->dispatchTo($name, $event, $payload);
+            } catch (\Throwable $e) {
+                $cause = $e instanceof HandlerFailedException ? ($e->getPrevious() ?? $e) : $e;
+                $io->warning("Webhook '$name' not delivered (event=$event): ".$cause->getMessage());
+
+                return Command::FAILURE;
+            }
+            $outcome === WebhookDispatcher::OUTCOME_DELIVERED
+                ? $io->success("Webhook '$name' delivered inline by the sync transport (event=$event).")
+                : $io->success("Webhook '$name' queued (event=$event). Consume the elevate_dxp transport to deliver.");
 
             return Command::SUCCESS;
         }

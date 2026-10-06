@@ -27,7 +27,7 @@ elevate_dxp:
 
 - `path` is accepted but informational only. The URL is always `/elevate-dxp/api/{name}`.
 - `class` is not validated at build time. An unknown or invalid class name (it must match `^[A-Za-z][A-Za-z0-9_]*$`) makes the list return an empty page and the detail return `404`.
-- Fields are mapped by the core `FieldMapperInterface` (`ReflectiveFieldMapper`). For each accessor it calls `get<Accessor>()`, otherwise a method with that exact name. Values are scalarised: dates become ATOM strings, elements their full path, objects with `__toString()` their string, arrays are mapped element by element, and anything else becomes `null`. Only list getters in `fields`.
+- Fields are mapped by the core `FieldMapperInterface` (`ReflectiveFieldMapper`). For each accessor it calls `get<Accessor>()`, `is<Accessor>()` or `has<Accessor>()`; no other method is ever invoked, so a mapping can never trigger a state change. Values are scalarised: dates become ATOM strings, elements their full path, objects with `__toString()` their string, arrays are mapped element by element, and anything else becomes `null`. Only list getters in `fields`.
 
 ## REST API
 

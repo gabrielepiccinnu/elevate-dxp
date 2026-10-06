@@ -74,7 +74,7 @@ All modules are always loaded; their services are registered whatever the config
 
 ## Installer
 
-`bin/console opendxp:bundle:install ElevateDxpBundle` runs `ElevateDxp\Core\Installer\Installer`, a `SettingsStoreAwareInstaller`.
+`bin/console opendxp:bundle:install ElevateDxpBundle` runs `ElevateDxp\Core\Installer\Installer`, a `SettingsStoreAwareInstaller`. The idempotent part (schema and permissions) is also exposed as `bin/console elevate-dxp:setup` for deployments.
 
 Each module contributes a subclass of `ElevateDxp\Core\Installer\ModuleInstaller`:
 

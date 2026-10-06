@@ -325,6 +325,7 @@ Personalised responses must not be served from a shared cache. Elevate DXP marks
 | `elevate-dxp:experiments:demo-seed` | Demo audience "VIP visitors" (`?vip=1` rule) and running experiment `hero` (A/B, goal `signup`) with variant target groups. Idempotent |
 | `elevate-dxp:experiments:report <key>` | Per-variant results table |
 | `elevate-dxp:experiments:distribution <key> [--visitors=10000]` | Simulates the weighted split (no writes, ignores the traffic gate) |
+| `elevate-dxp:experiments:prune [--events-days=395] [--profiles-days=395] [--chunk=1000] [--dry-run]` | Data retention: deletes old events, visitor profiles not seen for `--profiles-days`, and the assignments of those visitors without recent events. Chunked and idempotent. See [insights.md](insights.md#retention) |
 
 ## Admin resources
 

@@ -35,7 +35,7 @@ final class DamMetadataCommand extends Command
         $this->addOption('field', null, InputOption::VALUE_REQUIRED, 'Field name');
         $this->addOption('value', null, InputOption::VALUE_REQUIRED, 'Value to apply');
         $this->addOption('folder', null, InputOption::VALUE_REQUIRED, 'Asset folder path (for apply-folder)');
-        $this->addOption('overwrite', null, InputOption::VALUE_NONE, 'Overwrite existing values (apply-folder)');
+        $this->addOption('overwrite', null, InputOption::VALUE_NONE, 'Overwrite existing values (apply without --field, apply-folder); apply with --field always sets the value');
         $this->addOption('asset', null, InputOption::VALUE_REQUIRED, 'Asset id (for show)');
     }
 
@@ -70,17 +70,22 @@ final class DamMetadataCommand extends Command
         }
 
         if ($action === 'apply') {
+            $field = $input->getOption('field');
+            $field = $field === null || $field === '' ? null : (string) $field;
             $r = $this->applier->apply(
                 (string) $input->getOption('schema'),
-                (string) $input->getOption('field'),
+                $field,
                 $input->getOption('value'),
+                'cli',
+                MetadataApplier::resolveOverwrite($field, (bool) $input->getOption('overwrite')),
             );
             if ($r['error'] !== null) {
                 $io->error($r['error']);
 
                 return Command::FAILURE;
             }
-            $io->success(\sprintf('Applied to %d/%d matching asset(s).', $r['updated'], $r['matched']));
+            $io->success(\sprintf('Applied to %d/%d matching asset(s), %d unchanged (existing values kept%s).',
+                $r['updated'], $r['matched'], $r['unchanged'], $field === null && !$input->getOption('overwrite') ? '; use --overwrite to replace them' : ''));
 
             return Command::SUCCESS;
         }

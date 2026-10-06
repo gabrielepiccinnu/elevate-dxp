@@ -12,7 +12,7 @@ Installed with the bundle; no tables (permission only).
 elevate_dxp:
     statistics:
         enabled: true          # false: no per-report panels (catalogue, CLI and seeding still work)
-        max_rows: 1000         # cap on rows shown per run (min 1)
+        max_rows: 1000         # cap on rows fetched and shown per run (min 1)
         report_panels: true    # one "report" admin panel per configured report
         reports:
             assets_by_type:    # name: [A-Za-z0-9_-]+
@@ -29,10 +29,10 @@ elevate_dxp:
 Every query passes `ReadOnlySqlGuard` before execution:
 
 - It must be a single `SELECT` or `WITH` statement. Trailing semicolons are stripped, and any other `;` is rejected.
-- These keywords (whole words, case-insensitive) are rejected anywhere in the query, including inside string literals: `insert update delete drop alter truncate create grant revoke replace merge call into load lock rename set outfile dumpfile handler prepare execute deallocate`.
+- These keywords (whole words, case-insensitive) are rejected anywhere in the query, including inside string literals: `insert update delete drop alter truncate create grant revoke replace merge call into load lock rename set outfile dumpfile handler prepare execute deallocate`, plus dangerous functions: `sleep benchmark get_lock release_lock release_all_locks is_free_lock is_used_lock load_file system_user sys_exec sys_eval master_pos_wait source_pos_wait wait_for_executed_gtid_set wait_until_sql_thread_after_gtids`. Matching is whole-word, so a column such as `sleep_minutes` is accepted.
 - When no transaction is already open, the query runs inside `START TRANSACTION READ ONLY`, followed by `ROLLBACK`.
 
-The full result set is fetched, then cut to `max_rows`. For large tables, put a `LIMIT` in the query. Report SQL runs on the default DBAL connection with that connection's database rights. See [../security-and-privacy.md](../security-and-privacy.md).
+A `SELECT` report is wrapped as a derived table, `SELECT * FROM (<sql>) AS edxp_q LIMIT <max_rows + 1>`, so the database never returns more than `max_rows` rows (the extra row only detects truncation). A `WITH` report runs unwrapped and reading stops after `max_rows + 1` rows; the driver may still buffer the whole result, so put a `LIMIT` in `WITH` reports over large tables. Because of the derived table, a `SELECT` report must not return two columns with the same name: alias them (`a.id AS a_id, b.id AS b_id`). Report SQL runs on the default DBAL connection with that connection's database rights. See [../security-and-privacy.md](../security-and-privacy.md).
 
 ## Admin
 

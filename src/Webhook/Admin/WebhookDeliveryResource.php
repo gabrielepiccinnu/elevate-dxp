@@ -178,7 +178,7 @@ final class WebhookDeliveryResource extends AbstractDbalResource
         }
 
         try {
-            $this->dispatcher->dispatchTo($name, (string) $row['event'], WebhookDeliveryRepository::payloadOf($row));
+            $outcome = $this->dispatcher->dispatchTo($name, (string) $row['event'], WebhookDeliveryRepository::payloadOf($row));
         } catch (\Throwable $e) {
             // sync:// transport: the delivery ran inline and failed; the attempt is in the log.
             $cause = $e instanceof HandlerFailedException ? ($e->getPrevious() ?? $e) : $e;
@@ -186,6 +186,8 @@ final class WebhookDeliveryResource extends AbstractDbalResource
             return Action::message(\sprintf('Re-delivery of #%s failed: %s', $id, $cause->getMessage()), true);
         }
 
-        return Action::message(\sprintf('Re-delivery of #%s queued.', $id), true);
+        return Action::message($outcome === WebhookDispatcher::OUTCOME_DELIVERED
+            ? \sprintf('Re-delivery of #%s delivered.', $id)
+            : \sprintf('Re-delivery of #%s queued (async transport: see the log once the worker has run).', $id), true);
     }
 }

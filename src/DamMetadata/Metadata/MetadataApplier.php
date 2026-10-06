@@ -24,18 +24,30 @@ final class MetadataApplier
     }
 
     /**
-     * Sets one field (overwriting) on every asset matching the schema, scanning from the
-     * schema's path prefix.
+     * Applies schema metadata to every asset matching the schema, scanning from the schema's path
+     * prefix. With a field, that field is set to $value; without a field, the schema defaults are
+     * applied. Existing values are kept unless $overwrite is true (see resolveOverwrite()).
      *
-     * @return array{matched:int,updated:int,error:?string}
+     * @return array{matched:int,updated:int,unchanged:int,error:?string}
      */
-    public function apply(string $schema, string $field, mixed $value, string $actor = 'cli'): array
+    public function apply(string $schema, ?string $field, mixed $value, string $actor = 'cli', ?bool $overwrite = null): array
     {
+        $field = $field === null || $field === '' ? null : $field;
         $prefix = (string) ($this->schemas->get($schema)['path_prefix'] ?? '/');
         $folder = $prefix === '' || $prefix === '/' ? '/' : rtrim($prefix, '/');
-        $r = $this->applyToFolder($folder, $schema, $field, $value, true, null, $actor, false);
+        $r = $this->applyToFolder($folder, $schema, $field, $value, $overwrite ?? self::resolveOverwrite($field, false), null, $actor, false);
 
-        return ['matched' => $r['matched'], 'updated' => $r['updated'], 'error' => $r['error']];
+        return ['matched' => $r['matched'], 'updated' => $r['updated'], 'unchanged' => $r['unchanged'], 'error' => $r['error']];
+    }
+
+    /**
+     * Overwrite policy of the schema-wide CLI "apply": an explicit --field/--value is an explicit
+     * assignment and overwrites; applying schema defaults (no field) only initialises missing
+     * fields unless --overwrite is given (same default as the admin "apply to folder" action).
+     */
+    public static function resolveOverwrite(?string $field, bool $overwriteFlag): bool
+    {
+        return $overwriteFlag || ($field !== null && $field !== '');
     }
 
     /**

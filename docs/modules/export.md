@@ -33,7 +33,7 @@ elevate_dxp:
 - **data_object:** published objects of `class`, read through `OpenDxp\Model\DataObject\<Class>\Listing` and ordered by id. An invalid or unknown class name fails the run with `Unknown data object class "<name>"`. The name is not checked at container build.
 - **asset:** all non-folder assets, ordered by id.
 
-Rows are read in pages of `chunk_size`, but the whole result is held in memory and rendered at once. Fields are mapped by the core `FieldMapperInterface` (`ReflectiveFieldMapper`). For each accessor it calls `get<Accessor>()`, otherwise a method with that name. Values are scalarised: dates become ATOM strings, elements become their full path.
+Rows are read in pages of `chunk_size`, but the whole result is held in memory and rendered at once. Fields are mapped by the core `FieldMapperInterface` (`ReflectiveFieldMapper`). For each accessor it calls `get<Accessor>()`, `is<Accessor>()` or `has<Accessor>()`; no other method is ever invoked. Values are scalarised: dates become ATOM strings, elements become their full path.
 
 ## Formats
 

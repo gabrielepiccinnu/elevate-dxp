@@ -5,11 +5,18 @@ declare(strict_types=1);
 namespace ElevateDxp\Webhook\Webhook;
 
 use ElevateDxp\Webhook\Message\SendWebhookMessage;
+use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Component\Messenger\Stamp\HandledStamp;
 
 /** Routes an event to every active subscription registered for it, dispatching async delivery messages. */
 final class WebhookDispatcher
 {
+    /** The message was handled inline (sync:// transport or no routing) and the delivery succeeded. */
+    public const OUTCOME_DELIVERED = 'delivered';
+    /** The message was handed to an asynchronous transport; the outcome is not known yet. */
+    public const OUTCOME_QUEUED = 'queued';
+
     public function __construct(
         private readonly SubscriptionRegistry $subscriptions,
         private readonly MessageBusInterface $bus,
@@ -47,14 +54,27 @@ final class WebhookDispatcher
     /**
      * Queues (re-)delivery of one event to one named subscription.
      *
+     * With the sync:// transport the delivery runs inline: a failed delivery surfaces as an exception
+     * (Messenger HandlerFailedException) and a successful one returns OUTCOME_DELIVERED. With an async
+     * transport the message is only queued (OUTCOME_QUEUED).
+     *
      * @param array<string, mixed> $payload
+     *
+     * @return self::OUTCOME_* the outcome known at dispatch time
      */
-    public function dispatchTo(string $subscription, string $event, array $payload): void
+    public function dispatchTo(string $subscription, string $event, array $payload): string
     {
         if ($this->subscriptions->get($subscription) === null) {
             throw new \InvalidArgumentException(\sprintf('Unknown webhook subscription "%s".', $subscription));
         }
-        $this->bus->dispatch(new SendWebhookMessage($subscription, $event, $payload));
+
+        return self::outcomeOf($this->bus->dispatch(new SendWebhookMessage($subscription, $event, $payload)));
+    }
+
+    /** @return self::OUTCOME_* */
+    public static function outcomeOf(Envelope $envelope): string
+    {
+        return $envelope->last(HandledStamp::class) !== null ? self::OUTCOME_DELIVERED : self::OUTCOME_QUEUED;
     }
 
     /** @return list<string> */

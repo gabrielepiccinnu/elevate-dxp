@@ -132,7 +132,7 @@ final class EndpointResource extends AbstractAdminResource
             json_encode($result['body'], \JSON_PRETTY_PRINT | \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE | \JSON_INVALID_UTF8_SUBSTITUTE),
             $this->apiKeyHeader,
             $url,
-            $this->apiKeyConfigured ? '' : "\n# WARNING: elevate_dxp_datahub.api_key is empty, the public API denies every request.",
+            $this->apiKeyConfigured ? '' : "\n# WARNING: elevate_dxp.datahub.api_key is empty, the public API denies every request.",
         );
 
         return Action::text($text, 'Try request: '.$endpoint, 'json');

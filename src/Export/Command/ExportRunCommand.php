@@ -24,7 +24,7 @@ final class ExportRunCommand extends Command
     protected function configure(): void
     {
         $this
-            ->addArgument('job', InputArgument::OPTIONAL, 'Job name from elevate_dxp_export.jobs')
+            ->addArgument('job', InputArgument::OPTIONAL, 'Job name from elevate_dxp.export.jobs')
             ->addOption('list', 'l', InputOption::VALUE_NONE, 'List the configured jobs');
     }
 
@@ -36,7 +36,7 @@ final class ExportRunCommand extends Command
         if ($input->getOption('list') || $job === '') {
             $jobs = $this->runner->listJobs();
             if ($jobs === []) {
-                $io->warning('No export jobs configured under elevate_dxp_export.jobs.');
+                $io->warning('No export jobs configured under elevate_dxp.export.jobs.');
             } else {
                 $io->table(['Job', 'Format', 'Source', 'Class', 'Target'], array_map(
                     static fn (array $j): array => [$j['name'], $j['format'], $j['source'], $j['class'], $j['target']],

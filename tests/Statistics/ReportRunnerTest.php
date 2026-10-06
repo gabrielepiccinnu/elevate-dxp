@@ -73,6 +73,51 @@ final class ReportRunnerTest extends TestCase
         self::assertTrue($res['truncated']);
     }
 
+    public function testSelectIsWrappedWithLimitSoTheDatabaseNeverReturnsMoreThanMaxRows(): void
+    {
+        $conn = $this->createMock(Connection::class);
+        $conn->expects(self::once())->method('fetchAllAssociative')
+            ->with('SELECT * FROM (SELECT a FROM t) AS edxp_q LIMIT 3')
+            ->willReturn([['a' => 1], ['a' => 2], ['a' => 3]]);
+        $res = (new ReportRunner(['r' => ['sql' => 'SELECT a FROM t;']], $conn, 2))->run('r');
+        self::assertCount(2, $res['rows']);
+        self::assertTrue($res['truncated']);
+    }
+
+    public function testExplicitLimitIsCappedByMaxRows(): void
+    {
+        $conn = $this->createMock(Connection::class);
+        $conn->expects(self::once())->method('fetchAllAssociative')
+            ->with('SELECT * FROM (SELECT a FROM t) AS edxp_q LIMIT 6')
+            ->willReturn([]);
+        (new ReportRunner(['r' => ['sql' => 'SELECT a FROM t']], $conn, 10))->run('r', 5);
+    }
+
+    public function testWithQueryIsStreamedAndStoppedAfterMaxRows(): void
+    {
+        $fetched = 0;
+        $gen = (static function () use (&$fetched): \Generator {
+            for ($i = 1; $i <= 100; ++$i) {
+                ++$fetched;
+                yield ['n' => $i];
+            }
+        })();
+        $conn = $this->createMock(Connection::class);
+        $conn->expects(self::never())->method('fetchAllAssociative');
+        $conn->expects(self::once())->method('iterateAssociative')
+            ->with('WITH x AS (SELECT 1 AS n) SELECT n FROM x')
+            ->willReturn($gen);
+        $res = (new ReportRunner(['r' => ['sql' => 'WITH x AS (SELECT 1 AS n) SELECT n FROM x']], $conn, 2))->run('r');
+        self::assertCount(2, $res['rows']);
+        self::assertTrue($res['truncated']);
+        self::assertSame(3, $fetched, 'iteration stops after max_rows + 1 rows');
+    }
+
+    public function testLimitSql(): void
+    {
+        self::assertSame('SELECT * FROM (SELECT 1) AS edxp_q LIMIT 1', ReportRunner::limitSql('SELECT 1', 0));
+    }
+
     public function testColumnsDerivedFromFirstRowOrConfig(): void
     {
         self::assertSame(['a', 'b'], $this->runner('SELECT a, b FROM t')->columns('r'));

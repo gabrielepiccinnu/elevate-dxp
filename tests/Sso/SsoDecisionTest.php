@@ -92,6 +92,33 @@ final class SsoDecisionTest extends TestCase
         self::assertSame(['Author'], $d->identity->roles);
     }
 
+    public function testGroupsMappedOnlyToMissingRolesAreDenied(): void
+    {
+        $d = $this->service(true, true)->decide(['sub' => 'jane', 'groups' => ['ghosts']]);
+        self::assertFalse($d->allowed, 'NoSuchRole does not exist in OpenDXP: the login grants nothing');
+        self::assertStringContainsString('exists in OpenDXP', $d->reason);
+
+        $existing = new User();
+        $existing->setActive(true);
+        self::assertFalse($this->service(true, true, $existing)->decide(['sub' => 'jane', 'groups' => ['ghosts']])->allowed);
+
+        // one existing role (or the admin flag) is enough
+        self::assertTrue($this->service(true, true)->decide(['sub' => 'jane', 'groups' => ['ghosts', 'editors']])->allowed);
+        self::assertTrue($this->service(true, true)->decide(['sub' => 'jane', 'groups' => ['ghosts', 'admins']])->allowed);
+    }
+
+    public function testLoginWithOnlyMissingRolesThrows(): void
+    {
+        $this->expectException(SsoDeniedException::class);
+        $this->service(true, true)->login(['sub' => 'jane', 'groups' => ['ghosts']]);
+    }
+
+    public function testProvisionerRefusesIdentityWithOnlyMissingRoles(): void
+    {
+        $this->expectException(\RuntimeException::class);
+        (new OpenDxpUserProvisioner($this->directory()))->provision(new IdentityDescriptor('jane', null, ['NoSuchRole']));
+    }
+
     public function testDeactivatedUserIsNeverReactivated(): void
     {
         $user = new User();

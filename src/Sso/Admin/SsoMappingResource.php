@@ -172,7 +172,7 @@ final class SsoMappingResource extends AbstractAdminResource
             ['check' => 'Decision', 'result' => ($decision->allowed ? 'ALLOW — ' : 'DENY — ').$decision->reason],
         ];
         if (!$this->enabled) {
-            $rows[] = ['check' => 'Note', 'result' => 'SSO is disabled (elevate_dxp_sso.enabled: false): real logins are denied.'];
+            $rows[] = ['check' => 'Note', 'result' => 'SSO is disabled (elevate_dxp.sso.enabled: false): real logins are denied.'];
         }
 
         return $rows;

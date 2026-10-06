@@ -51,11 +51,12 @@ Caveat: Symfony config key normalisation rewrites a `role_mapping` key that cont
 1. SSO disabled → deny.
 2. No identifier → deny.
 3. No group maps to a role → deny.
-4. User unknown and `jit_provisioning` false → deny.
-5. User exists but is deactivated → deny (SSO never re-activates an account).
-6. Otherwise → allow. `login()` provisions the user and syncs the admin flag and roles on every login, so IdP group changes propagate.
+4. The mapped roles grant nothing: none of them exists in OpenDXP and none is an admin alias → deny.
+5. User unknown and `jit_provisioning` false → deny.
+6. User exists but is deactivated → deny (SSO never re-activates an account).
+7. Otherwise → allow. `login()` provisions the user and syncs the admin flag and roles on every login, so IdP group changes propagate.
 
-A group mapped only to a role name that does not exist in OpenDXP still counts as mapped: the login is allowed, but the user gets no roles from it.
+Role names that do not exist in OpenDXP are ignored (never created). A login whose groups map only to such roles is denied (rule 4); with at least one existing role, or the admin flag, it is allowed and the missing roles are skipped. The provisioner enforces the same rule.
 
 ## Admin resource `sso_mapping`
 

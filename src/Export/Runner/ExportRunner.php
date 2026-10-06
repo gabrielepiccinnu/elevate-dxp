@@ -79,7 +79,7 @@ final class ExportRunner
     public function run(string $jobName, string $actor = 'cli'): array
     {
         if (!$this->enabled) {
-            throw new \RuntimeException('The export bundle is disabled (elevate_dxp_export.enabled: false).');
+            throw new \RuntimeException('The export bundle is disabled (elevate_dxp.export.enabled: false).');
         }
         $job = $this->job($jobName);
         $renderer = $this->renderer((string) $job['format']);

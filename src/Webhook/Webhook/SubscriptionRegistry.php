@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ElevateDxp\Webhook\Webhook;
 
 /**
- * Read-only view of the configured subscriptions (elevate_dxp_webhook.subscriptions).
+ * Read-only view of the configured subscriptions (elevate_dxp.webhook.subscriptions).
  * Subscriptions are edited in YAML only, so they stay versioned with the application (GitOps-friendly).
  */
 final class SubscriptionRegistry

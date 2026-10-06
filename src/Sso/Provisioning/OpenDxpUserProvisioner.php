@@ -12,7 +12,8 @@ use OpenDxp\Model\User;
  * admin UI, the portal and SSO share one identity/role model.
  *
  * Deny-by-default: an identity without roles (or identifier) is refused; mapped role names that do
- * not exist in OpenDXP are ignored (never auto-created).
+ * not exist in OpenDXP are ignored (never auto-created), and an identity whose roles ALL do not
+ * exist (and that is not admin) is refused before any user is created or changed.
  */
 class OpenDxpUserProvisioner
 {
@@ -24,6 +25,18 @@ class OpenDxpUserProvisioner
     {
         if (!$identity->isAuthorized()) {
             throw new \RuntimeException('Refusing to provision an unauthorized identity (no roles mapped).');
+        }
+
+        $plan = RolePlan::fromIdentity($identity);
+        $roleIds = [];
+        foreach ($plan->roleNames as $roleName) {
+            $id = $this->directory->roleId($roleName);
+            if ($id !== null) {
+                $roleIds[] = $id;
+            }
+        }
+        if (!$plan->admin && $roleIds === []) {
+            throw new \RuntimeException('Refusing to provision an identity whose mapped roles do not exist in OpenDXP.');
         }
 
         $user = $this->directory->findUser($identity->identifier);
@@ -39,15 +52,6 @@ class OpenDxpUserProvisioner
             $user->setEmail($identity->email);
         }
         $user->setActive(true);
-
-        $plan = RolePlan::fromIdentity($identity);
-        $roleIds = [];
-        foreach ($plan->roleNames as $roleName) {
-            $id = $this->directory->roleId($roleName);
-            if ($id !== null) {
-                $roleIds[] = $id;
-            }
-        }
 
         $user->setAdmin($plan->admin);
         $user->setRoles($roleIds);

@@ -13,7 +13,7 @@ use Symfony\Contracts\Cache\ItemInterface;
 
 /**
  * One "report" panel (table + chart) per configured report. Registered by
- * StatisticsModule for every entry of elevate_dxp_statistics.reports.
+ * StatisticsModule for every entry of elevate_dxp.statistics.reports.
  *
  * Columns come from the report "columns" option or are derived from the query once and cached,
  * because the admin menu builds every schema on load.

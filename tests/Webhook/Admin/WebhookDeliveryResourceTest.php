@@ -20,7 +20,7 @@ final class WebhookDeliveryResourceTest extends TestCase
     private RecordingMessageBus $bus;
 
     /** @param array<string, mixed>|false $row */
-    private function resource(array|false $row, ?\Throwable $busFailure = null): WebhookDeliveryResource
+    private function resource(array|false $row, ?\Throwable $busFailure = null, bool $handledInline = false): WebhookDeliveryResource
     {
         $db = $this->createStub(Connection::class);
         $db->method('quoteIdentifier')->willReturnCallback(static fn (string $s): string => '`'.$s.'`');
@@ -29,7 +29,7 @@ final class WebhookDeliveryResourceTest extends TestCase
             'erp' => ['url' => 'http://erp', 'secret' => 's', 'events' => ['object.update']],
             'off' => ['active' => false, 'url' => 'http://off', 'events' => ['object.update']],
         ]);
-        $this->bus = Fakes::bus($busFailure);
+        $this->bus = Fakes::bus($busFailure, $handledInline);
 
         return new WebhookDeliveryResource($db, new WebhookDispatcher($registry, $this->bus), $registry);
     }
@@ -86,11 +86,20 @@ final class WebhookDeliveryResourceTest extends TestCase
         self::assertSame(['id' => 42], $m->payload);
     }
 
+    public function testRedeliverReportsDeliveredWhenHandledInline(): void
+    {
+        $result = $this->resource($this->row(), null, true)->runAction('redeliver', '5', []);
+        self::assertStringContainsString('delivered', $result['message']);
+        self::assertStringNotContainsString('queued', $result['message']);
+        self::assertCount(1, $this->bus->messages);
+    }
+
     public function testRedeliverReportsInlineFailure(): void
     {
         $failure = new HandlerFailedException(new Envelope(new \stdClass()), [new \RuntimeException('HTTP 500 again')]);
         $result = $this->resource($this->row(), $failure)->runAction('redeliver', '5', []);
         self::assertStringContainsString('HTTP 500 again', $result['message']);
+        self::assertStringContainsString('failed', $result['message']);
         self::assertTrue($result['reload']);
     }
 

@@ -71,16 +71,16 @@ Data you forwarded to Matomo or PostHog must be erased there as well. The OpenDX
 
 ### Retention
 
-There is no automatic expiry. Schedule a cleanup that matches your privacy policy, for example as a cron job:
+There is no automatic expiry. Schedule `elevate-dxp:experiments:prune` with retention periods that match your privacy policy, for example as a daily cron job:
 
-```sql
--- keep 13 months
-DELETE FROM edxp_event WHERE created_at < NOW() - INTERVAL 13 MONTH;
-DELETE FROM edxp_visitor_profile WHERE last_seen < NOW() - INTERVAL 13 MONTH;
-DELETE a FROM edxp_assignment a
-  LEFT JOIN edxp_visitor_profile p ON p.visitor_id = a.visitor_id
-  WHERE p.visitor_id IS NULL AND a.created_at < NOW() - INTERVAL 13 MONTH;
 ```
+bin/console elevate-dxp:experiments:prune [--events-days=395] [--profiles-days=395] [--chunk=1000] [--dry-run]
+```
+
+- `edxp_event` rows older than `--events-days` are deleted.
+- `edxp_visitor_profile` rows not seen for `--profiles-days` are deleted, together with the `edxp_assignment` rows of those visitors that have no event newer than the more recent of the two cut-offs (a visitor still generating events keeps its variant).
+- Assignments of visitors that never had a profile (`profile_enabled: false`) are not touched.
+- Deletes run in chunks of `--chunk` rows, so the tables are never locked for long. The command is idempotent; `--dry-run` only counts.
 
 Deleting assignments and events changes the results of past experiments. Export the reports you want to keep first.
 
