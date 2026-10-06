@@ -1,63 +1,82 @@
-# Elevate DXP Export Bundle
+# Export
 
-`elevate-dxp/export-bundle` (`ElevateDxp\Export`) runs YAML-defined exports of OpenDXP data objects and assets. It renders them as CSV, JSON or XML and writes them to a local file, an OpenDXP asset or an HTTP endpoint. It is ported from the legacy `OpenPimcore\ExportBundle`. License: GPL-3.0-or-later.
+Runs YAML-defined export jobs over OpenDXP data objects or assets. Each job renders its rows as CSV, JSON or XML and writes them to a local file, an OpenDXP asset or an HTTP endpoint. The [feed](feed.md) module reuses its source reader, CSV sanitiser and targets.
+
+Config key: `elevate_dxp.export` · Permission: `elevate_dxp_export` · Admin menu: Elevate DXP → Data
+
+Installed with the bundle; no tables (permission only).
 
 ## Configuration
 
 ```yaml
-elevate_dxp_export:
-    enabled: true
-    base_path: var/elevate-dxp/exports   # allow-listed base dir for "local" targets (relative to project dir, or absolute)
-    chunk_size: 100                   # listing page size
-    lock_dir: ~                       # lock files dir (default: system temp dir)
-    jobs:
-        products_csv:                 # name: [A-Za-z0-9_-]+
-            description: Published products
-            source:
-                type: data_object     # data_object | asset
-                class: Product        # data object class (type data_object)
-                fields: { id: id, sku: sku, name: name, modified: modificationDate }   # output column => getter
-            format: csv               # csv | json | xml
-            target:
-                type: local           # local | asset | http
-                path: products.csv    # file under base_path / asset path / http(s) URL
+elevate_dxp:
+    export:
+        enabled: true                       # false: runs are refused (preview still works)
+        base_path: var/elevate-dxp/exports  # base dir for "local" targets, relative to the project dir or absolute
+        chunk_size: 100                     # listing page size (min 1)
+        lock_dir: ~                         # lock file dir; null = system temp dir
+        jobs:
+            products_csv:                   # name: [A-Za-z0-9_-]+
+                description: Published products
+                source:
+                    type: data_object       # data_object | asset (required)
+                    class: Product          # data object class (type data_object)
+                    fields: { id: id, sku: sku, name: name, modified: modificationDate }   # output column => accessor
+                format: csv                 # csv | json | xml (required)
+                target:
+                    type: local             # local | asset | http (required)
+                    path: products.csv      # file under base_path, asset path, or http(s) URL (required)
 ```
 
-Fields are mapped explicitly by the core `FieldMapperInterface` (`ReflectiveFieldMapper`). Only published objects of the configured class are read, through `OpenDxp\Model\DataObject\<Class>\Listing`. For assets, every asset except folders is read.
+## Source
 
-## Security properties
+- **data_object:** published objects of `class`, read through `OpenDxp\Model\DataObject\<Class>\Listing` and ordered by id. An invalid or unknown class name fails the run with `Unknown data object class "<name>"`. The name is not checked at container build.
+- **asset:** all non-folder assets, ordered by id.
 
-- **PathGuard:** local targets are confined to `base_path`. Paths containing `..`, NUL bytes, or an empty file name are rejected. Files are written atomically (a temp file, then a rename).
-- **CSV formula-injection guard:** any cell, header included, that starts with `= + - @ \t \r` is prefixed with `'`. See `CsvRenderer::sanitize()`, which the feed bundle reuses.
-- **XML escaping:** XML is built with DOM. Element names are sanitised, and names that start with `xml` or a digit get the prefix `f_`.
-- **Lock:** a job holds an exclusive non-blocking `flock`, so a concurrent run of the same job fails with "already running".
-- **Audit:** every run logs `export.<job>` with `start`, then `success` or `failure`. Logging goes through `ElevateDxp\Core\Contract\AuditLoggerInterface`, and the actor is `cli` or `admin:<user>`.
-- **HTTP target:** sends a POST via the Guzzle client registered by OpenDXP. Redirects are not followed, timeouts are 15 s total and 5 s to connect, and any non-2xx status counts as a failure. The returned location shows only the scheme and host, never the query string.
+Rows are read in pages of `chunk_size`, but the whole result is held in memory and rendered at once. Fields are mapped by the core `FieldMapperInterface` (`ReflectiveFieldMapper`). For each accessor it calls `get<Accessor>()`, otherwise a method with that name. Values are scalarised: dates become ATOM strings, elements become their full path.
+
+## Formats
+
+- **csv:** the header comes from the keys of the first row. Formula-injection guard: any cell (header included) that starts with `=`, `+`, `-`, `@`, tab or CR is prefixed with `'` (`CsvRenderer::sanitize()`). An empty result gives an empty file.
+- **json:** a pretty-printed array of row objects.
+- **xml:** `<items><item><field>value</field>...</item></items>`, built with DOM so values are escaped. In element names, characters outside `[A-Za-z0-9_.-]` become `_`, and names that do not start with a letter or `_`, or that start with `xml`, get the prefix `f_`.
+
+## Targets
+
+- **local:** written under `base_path` (`PathGuard`). Paths containing `..` or NUL, an empty path, or a path that resolves outside the base are rejected. Directories are created as needed. The write is atomic (temp file, then rename).
+- **asset:** creates the asset at `path` (parent folders included, type chosen by `Asset::create()`) or updates an existing one in place. It fails if the path is a folder or contains `..`.
+- **http:** `POST` of the raw content (`Content-Type: application/octet-stream`) to the absolute http(s) URL in `path`.
+  - Uses the OpenDXP Guzzle client (`GuzzleHttp\ClientInterface`).
+  - Timeouts: 15 s total, 5 s connect. Redirects are not followed. Any non-2xx status is a failure.
+  - The reported location contains only the scheme and host.
+
+## Runs
+
+- A run takes an exclusive non-blocking `flock` on `<lock_dir>/edxp_export_<job>.lock`. A concurrent run of the same job fails with "already running".
+- Every run is audited as `export.<job>` with `start`, then `success` (rows, location) or `failure` (error). The actor is `cli` or `admin:<user>`.
+- Preview reads the first rows and renders them without writing, locking or auditing.
+
+## Admin
+
+**Exports** (`exports`) is a read-only grid of the configured jobs (format, source, class, target, field mapping). Record actions:
+
+- **Run export** (asks for confirmation): runs the job and reports the row count and location.
+- **Preview**: parameters `limit` (default 20, max 200) and `as` (`table` or `rendered`).
 
 ## CLI
 
 ```
 bin/console elevate-dxp:export:run <job>
-bin/console elevate-dxp:export:run --list
+bin/console elevate-dxp:export:run --list     # or -l
 ```
 
-## Admin
+Without a job name, the command prints the job list and exits with `INVALID`. Schedule runs with cron or the scheduler of your choice.
 
-The resource `exports` (group *Data*, permission `elevate_dxp_export`) lists the configured jobs read-only. It has two record actions:
+## Extension points
 
-- **Run export** (asks for confirmation) returns a message with the row count and location.
-- **Preview** takes the parameters `limit` (at most 200) and `as` (`table` or `rendered`). It reads the first rows without writing or locking, and returns either a table or the rendered text.
-
-## Services and extension points
-
-- Renderers are tagged `elevate_dxp_export.renderer` with `key: csv|json|xml`.
-- Targets are tagged `elevate_dxp_export.target` with `key: local|asset|http`. The feed bundle uses the same tag.
-- `ElevateDxp\Export\Contract\SourceReaderInterface` is an alias of `Source\SourceReader`, and the feed bundle reuses it.
+- Renderers implement `ElevateDxp\Export\Contract\ExportRendererInterface` and are tagged `elevate_dxp_export.renderer` with `key: <format>`.
+- Targets implement `ExportTargetInterface` and are tagged `elevate_dxp_export.target` with `key: <type>`. The feed module uses the same locator.
+- `ElevateDxp\Export\Contract\SourceReaderInterface` is an alias of `Source\SourceReader`.
 - `Runner\ExportRunner` provides `listJobs()`, `preview()` and `run()`.
 
-## Porting notes
-
-- The Studio API controller (`/pimcore-studio/api/openpimcore/export/...`) is replaced by the admin resource.
-- The HTTP target uses `GuzzleHttp\ClientInterface`, because `symfony/http-client` is not part of the OpenDXP stack.
-- `AssetTarget` creates new assets with `Asset::create()`, which picks the right asset type. Existing assets are updated in place.
-- The source reader has an optional `$limit` (used by preview), stable ordering by id, and an explicit error for an unknown or invalid class name. The legacy reader silently returned no rows.
+The `format` and `target.type` values are validated against fixed enums in the configuration, so a new renderer or target key also needs a configuration change. See [../architecture.md](../architecture.md).

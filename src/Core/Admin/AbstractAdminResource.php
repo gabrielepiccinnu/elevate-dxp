@@ -24,11 +24,17 @@ abstract class AbstractAdminResource implements AdminResourceInterface
         return ['data' => [], 'total' => 0];
     }
 
+    /** @return array<string, mixed>|null */
     public function get(string $id): ?array
     {
         return null;
     }
 
+    /**
+     * @param array<string, mixed> $data
+     *
+     * @return array<string, mixed>
+     */
     public function save(array $data): array
     {
         throw new \InvalidArgumentException(\sprintf('Resource "%s" is read-only.', $this->getKey()));
@@ -39,6 +45,11 @@ abstract class AbstractAdminResource implements AdminResourceInterface
         throw new \InvalidArgumentException(\sprintf('Resource "%s" does not support delete.', $this->getKey()));
     }
 
+    /**
+     * @param array<string, mixed> $params
+     *
+     * @return array<string, mixed>
+     */
     public function runAction(string $action, ?string $id, array $params): array
     {
         throw new \InvalidArgumentException(\sprintf('Unknown action "%s" for resource "%s".', $action, $this->getKey()));
@@ -47,7 +58,11 @@ abstract class AbstractAdminResource implements AdminResourceInterface
     /**
      * Helper for in-memory lists (config-backed resources): filter by q, sort, page.
      *
-     * @param list<array<string,mixed>> $rows
+     * @param list<array<string, mixed>> $rows
+     * @param array<string, mixed>       $query
+     * @param list<string>               $searchKeys
+     *
+     * @return array{data: list<array<string, mixed>>, total: int}
      */
     protected function paginate(array $rows, array $query, array $searchKeys = ['name', 'key', 'id']): array
     {

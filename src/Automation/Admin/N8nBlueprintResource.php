@@ -45,6 +45,7 @@ final class N8nBlueprintResource extends AbstractAdminResource
         return AutomationInstaller::PERMISSION;
     }
 
+    /** @return array<string, mixed> */
     public function getSchema(): array
     {
         return [
@@ -71,11 +72,17 @@ final class N8nBlueprintResource extends AbstractAdminResource
         return $this->paginate($rows, $query, ['name', 'events']);
     }
 
+    /** @return array<string, mixed>|null */
     public function get(string $id): ?array
     {
         return \in_array($id, $this->generator->subscriptionNames(), true) ? $this->row($id) : null;
     }
 
+    /**
+     * @param array<string, mixed> $params
+     *
+     * @return array<string, mixed>
+     */
     public function runAction(string $action, ?string $id, array $params): array
     {
         if ($action !== 'blueprint') {
@@ -92,6 +99,7 @@ final class N8nBlueprintResource extends AbstractAdminResource
         return Action::text($this->generator->toJson($blueprint), \sprintf('n8n blueprint · %s (n8n → Import from clipboard)', $id), 'json');
     }
 
+    /** @return array<string, mixed> */
     private function row(string $name): array
     {
         return [

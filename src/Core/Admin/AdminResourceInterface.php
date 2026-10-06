@@ -39,6 +39,7 @@ interface AdminResourceInterface
     /** Permission key required to see and use the resource (admins always pass). */
     public function getPermission(): string;
 
+    /** @return array<string, mixed> */
     public function getSchema(): array;
 
     /**
@@ -48,11 +49,24 @@ interface AdminResourceInterface
      */
     public function list(array $query): array;
 
+    /** @return array<string, mixed>|null */
     public function get(string $id): ?array;
 
+    /**
+     * Creates or updates a record and returns it as stored.
+     *
+     * @param array<string, mixed> $data
+     *
+     * @return array<string, mixed>
+     */
     public function save(array $data): array;
 
     public function delete(string $id): void;
 
+    /**
+     * @param array<string, mixed> $params
+     *
+     * @return array<string, mixed>
+     */
     public function runAction(string $action, ?string $id, array $params): array;
 }

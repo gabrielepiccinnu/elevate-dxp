@@ -14,6 +14,11 @@ final class VisitorProfileRepository
     {
     }
 
+    /**
+     * Profile row with utm_first, utm_last and target_groups decoded from JSON, or null when unknown.
+     *
+     * @return array<string, mixed>|null
+     */
     public function find(string $visitorId): ?array
     {
         try {

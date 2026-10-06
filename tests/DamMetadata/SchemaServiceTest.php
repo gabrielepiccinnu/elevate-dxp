@@ -7,7 +7,7 @@ namespace ElevateDxp\Tests\DamMetadata;
 use ElevateDxp\DamMetadata\Metadata\SchemaService;
 use PHPUnit\Framework\TestCase;
 
-/** Ported from OpenPimcore\Tests\DamMetadataBundle\SchemaServiceTest, plus the new planning logic. */
+/** Schema matching, validation, native type mapping and metadata planning. */
 final class SchemaServiceTest extends TestCase
 {
     private function service(): SchemaService
@@ -52,13 +52,13 @@ final class SchemaServiceTest extends TestCase
         self::assertNotNull($s->validateValue(['name' => 'reviewed', 'type' => 'checkbox'], 'maybe'));
     }
 
-    public function testPimcoreTypeMapping(): void
+    public function testNativeTypeMapping(): void
     {
         $s = $this->service();
-        self::assertSame('input', $s->pimcoreType('number'));
-        self::assertSame('select', $s->pimcoreType('select'));
-        self::assertSame('checkbox', $s->pimcoreType('checkbox'));
-        self::assertSame('input', $s->pimcoreType('unknown'));
+        self::assertSame('input', $s->nativeType('number'));
+        self::assertSame('select', $s->nativeType('select'));
+        self::assertSame('checkbox', $s->nativeType('checkbox'));
+        self::assertSame('input', $s->nativeType('unknown'));
         self::assertSame('date', $s->nativeType('date'));
     }
 

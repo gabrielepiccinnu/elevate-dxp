@@ -91,14 +91,20 @@ final class ExperimentRuntime implements ResetInterface
         return $this->assignments[$experimentKey] ?? null;
     }
 
+    /**
+     * Free-form payload of the variant assigned to the current visitor (empty when unassigned).
+     *
+     * @return array<string, mixed>
+     */
     public function payload(string $experimentKey): array
     {
-        $variant = $this->variant($experimentKey);
-        if ($variant === null) {
+        $variantKey = $this->variant($experimentKey);
+        if ($variantKey === null) {
             return [];
         }
+        $variant = $this->assignedExperiments[$experimentKey]->getVariant($variantKey);
 
-        return $this->assignedExperiments[$experimentKey]->getVariant($variant)?->payload ?? [];
+        return $variant === null ? [] : $variant->payload;
     }
 
     /** @return array<string,string> */

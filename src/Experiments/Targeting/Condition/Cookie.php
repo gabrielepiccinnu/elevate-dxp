@@ -14,6 +14,7 @@ final class Cookie extends AbstractVariableCondition
     {
     }
 
+    /** @param array<string, mixed> $config */
     public static function fromConfig(array $config): self
     {
         return new self(trim((string) ($config['name'] ?? '')), StringMatcher::mode($config), isset($config['value']) ? (string) $config['value'] : null);

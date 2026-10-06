@@ -16,8 +16,8 @@ use OpenDxp\Model\Asset;
 use OpenDxp\Model\DataObject\Concrete;
 
 /**
- * Portal collections (named carts), owner-scoped (admins see all). Replaces the Studio
- * "Collections" card: create/edit items, ZIP download, share, revoke, load into the cart.
+ * Portal collections (named carts), owner-scoped (admins see all): create/edit items,
+ * ZIP download, share, revoke, load into the cart.
  */
 final class CollectionResource extends AbstractAdminResource
 {
@@ -197,7 +197,13 @@ final class CollectionResource extends AbstractAdminResource
         return ctype_digit($id) ? $this->collections->find((int) $id, $this->owner->scope()) : null;
     }
 
-    /** Never exposes the raw share token in the collections grid. */
+    /**
+     * Never exposes the raw share token in the collections grid.
+     *
+     * @param array<string, mixed> $r collection row from the repository
+     *
+     * @return array<string, mixed>
+     */
     private static function row(array $r): array
     {
         $out = [
@@ -216,7 +222,11 @@ final class CollectionResource extends AbstractAdminResource
         return $out;
     }
 
-    /** @param array{type:string,id:int} $item */
+    /**
+     * @param array{type:string,id:int} $item
+     *
+     * @return array{ref: string, label: string, path: string|null}
+     */
     private static function describe(array $item): array
     {
         $el = $item['type'] === 'asset' ? Asset::getById($item['id']) : Concrete::getById($item['id']);

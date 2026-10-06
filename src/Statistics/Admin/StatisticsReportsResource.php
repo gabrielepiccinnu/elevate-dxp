@@ -16,8 +16,8 @@ use OpenDxp\Security\User\TokenStorageUserResolver;
 
 /**
  * Report catalogue: YAML-configured reports plus native OpenDXP Custom Reports (read-only).
- * Replaces the Studio statistics dashboard list; "Run" shows the rows, "Seed native Custom
- * Reports" creates the configured reports as native ones (idempotent).
+ * "Run" shows the rows, "Seed native Custom Reports" creates the configured reports as native
+ * ones (idempotent).
  */
 final class StatisticsReportsResource extends AbstractAdminResource
 {
@@ -141,6 +141,7 @@ final class StatisticsReportsResource extends AbstractAdminResource
         return $rows;
     }
 
+    /** @return array<string, mixed> */
     private function run(string $id): array
     {
         [$source, $name] = array_pad(explode(':', $id, 2), 2, '');
@@ -168,6 +169,7 @@ final class StatisticsReportsResource extends AbstractAdminResource
         throw new \InvalidArgumentException(\sprintf('Unknown report "%s".', $id));
     }
 
+    /** @return array<string, mixed> */
     private function seedNative(): array
     {
         $user = $this->user();

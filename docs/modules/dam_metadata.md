@@ -1,51 +1,74 @@
-# Elevate DXP DAM Metadata Bundle
+# DAM metadata
 
-Typed asset-metadata schemas built on the native OpenDXP predefined asset metadata (`OpenDxp\Model\Metadata\Predefined`). The bundle validates values and applies them in bulk to an asset folder. Ported from `OpenPimcore\DamMetadataBundle`. GPL-3.0-or-later.
+Typed asset-metadata schemas defined in YAML, built on native OpenDXP predefined asset metadata (`OpenDxp\Model\Metadata\Predefined`). The module creates the predefined definitions, validates values, and applies them in bulk to the assets of a folder. Values are stored as native asset metadata.
+
+Config key: `elevate_dxp.dam_metadata` · Permission: `elevate_dxp_dam_metadata` · Admin menu: Elevate DXP → Content
+
+See also: [Configuration](../configuration.md), [Architecture](../architecture.md).
+
+The bundle installer (`bin/console opendxp:bundle:install ElevateDxpBundle`) registers the permission; the module creates no tables.
 
 ## Configuration
 
 ```yaml
-elevate_dxp_dam_metadata:
-    batch_size: 200
-    schemas:
-        product_assets:
-            label: 'Product assets'
-            path_prefix: /products        # only assets below this path
-            asset_types: [image]          # empty = any type
-            fields:
-                - { name: copyright, type: input, default: '(c) ACME' }
-                - { name: usage_rights, type: select, options: [web, print, all] }
-                - { name: reviewed, type: checkbox, default: 'false' }
-                - { name: priority, type: number }   # stored as native "input"
-                - { name: expires, type: date }      # stored as timestamp
+elevate_dxp:
+    dam_metadata:
+        enabled: true          # currently not read by any service
+        batch_size: 200        # assets loaded per batch during bulk apply (min 1)
+        schemas:               # default: none
+            product_assets:
+                label: 'Product assets'        # default: '' (the schema name is shown)
+                path_prefix: /products         # default '/'; plain string prefix of the asset full path
+                asset_types: [image]           # default [] = any type
+                fields:
+                    - { name: copyright, type: input, default: '(c) ACME' }
+                    - { name: usage_rights, type: select, options: [web, print, all] }
+                    - { name: reviewed, type: checkbox, default: 'false' }
+                    - { name: priority, type: number }   # stored as native "input"
+                    - { name: expires, type: date }      # stored as a Unix timestamp
 ```
 
-## CLI
+Field keys: `name` (required), `type` (`input`, `textarea`, `select`, `checkbox`, `number`, `date`; default `input`), `label`, `options` (for `select`), `default`, `description`.
 
-`elevate-dxp:dam:metadata <action>` supports these actions:
+`path_prefix` is a plain prefix match: `/products` also matches `/products-internal/...`. Use a trailing slash (`/products/`) to restrict to the folder. Folders never match.
 
-- `schemas`: list the schemas.
-- `sync [--schema=]`: create the native predefined definitions.
-- `apply --schema --field --value`: the legacy action. It sets one field on every asset that matches the schema.
-- `apply-folder --folder --schema [--field --value] [--overwrite]`: apply to the assets in a folder.
-- `show --asset=<id>`: show an asset's metadata.
+Validation: `number` must be numeric; `checkbox` accepts a boolean or `0`, `1`, `true`, `false`; `date` accepts a timestamp or anything `strtotime()` parses; `select` must be one of `options`. `textarea` maps to native `textarea`, `number` to native `input`.
+
+## Predefined metadata sync
+
+Sync creates one native predefined definition per field and target asset type (one without a target subtype when `asset_types` is empty). The group is the schema label; `select` options become the comma-separated config. It is idempotent: a definition with the same name and either no subtype or the same subtype counts as existing, and existing definitions are never modified. Each sync is audited as `dam.metadata.sync_predefined`.
+
+## Bulk apply
+
+`apply_folder` (admin) and `apply-folder` (CLI) scan the folder recursively in batches of `batch_size` and only touch assets that match the schema:
+
+- With `field` and `value`: the value is validated first, then set; existing values are kept unless `overwrite` is set.
+- Without `field`: every field that has a `default` and is missing on the asset is initialised (all of them with `overwrite`).
+- From the admin, the native `save` permission is checked per asset (denied assets are counted). Failures are counted and the run continues.
+- The result reports matched, updated, unchanged, denied and failed assets. Each run is audited as `dam.metadata.bulk_apply`.
 
 ## Admin resource `dam_metadata_schemas`
 
-This resource needs the `elevate_dxp_dam_metadata` permission. It appears in the Content menu group as a read-only grid of schemas, with a column showing how many predefined definitions are synced.
+Read-only grid of the configured schemas ("DAM metadata schemas") with a "Predefined synced" column (`existing/total` definitions).
 
-| Action | Scope | What it does | Extra permission |
+| Action | Scope | What it does | Extra check |
 |---|---|---|---|
-| `fields` | record | Shows the fields of the selected schema. | none |
-| `sync_predefined` | global | Creates the native predefined definitions. Optional param: `schema`. It is idempotent, and one definition is created per field and target asset type. | `asset_metadata` |
-| `apply_folder` | global | Applies to a folder. See the parameters below. | `assets` |
-| `predefined` | global | Lists the native predefined metadata. | none |
-| `show_asset` | global | Shows the metadata of one asset. | none |
+| Show fields (`fields`) | record | fields of the schema with native type, options and default | none |
+| Sync predefined metadata (`sync_predefined`) | global | creates missing predefined definitions; optional param `schema` (empty = all) | native `asset_metadata` permission (or admin) |
+| Apply to folder (`apply_folder`) | global | params: `folder` (asset folder), `schema`, optional `field` and `value`, `overwrite` | native `assets` permission (or admin), plus `save` per asset |
+| Native predefined metadata (`predefined`) | global | lists all native predefined definitions | none |
+| Show asset metadata (`show_asset`) | global | metadata of one asset (id or path) | native `view` permission on the asset |
 
-`apply_folder` takes these params:
+## CLI
 
-- `folder` (asset path) and `schema`;
-- `field` and `value`, both optional;
-- `overwrite`.
+`bin/console elevate-dxp:dam:metadata <action>`:
 
-It works on the folder recursively and only touches assets that match the schema. It checks the native `save` permission on each asset. Without a `field`, it initializes the missing fields that have a `default`. Values are validated before any asset is touched.
+| Action | Options | Description |
+|---|---|---|
+| `schemas` | | list schemas and fields |
+| `sync` | `[--schema=]` | create the native predefined definitions |
+| `apply` | `--schema --field --value` | set one field, overwriting, on every asset matching the schema (scans from `path_prefix`) |
+| `apply-folder` | `--folder --schema [--field --value] [--overwrite]` | bulk apply as described above; `--folder` defaults to `/` |
+| `show` | `--asset=<id>` | show an asset's metadata |
+
+The CLI does not check user permissions. Note that `apply` without `--field` initialises every field with a default and overwrites existing values.

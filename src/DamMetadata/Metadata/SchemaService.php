@@ -75,7 +75,11 @@ final class SchemaService
         return $types === [] || \in_array($type, $types, true);
     }
 
-    /** @param array<string,mixed> $field @return string|null error message (null = valid) */
+    /**
+     * @param array<string,mixed> $field
+     *
+     * @return string|null error message (null = valid)
+     */
     public function validateValue(array $field, mixed $value): ?string
     {
         $type = (string) ($field['type'] ?? 'input');
@@ -94,7 +98,11 @@ final class SchemaService
         };
     }
 
-    /** Converts a validated value to what the native metadata type stores. */
+    /**
+     * Converts a validated value to what the native metadata type stores.
+     *
+     * @param array<string,mixed> $field
+     */
     public function normalizeValue(array $field, mixed $value): mixed
     {
         return match ((string) ($field['type'] ?? 'input')) {
@@ -114,12 +122,6 @@ final class SchemaService
             'date' => 'date',
             default => 'input', // input, number
         };
-    }
-
-    /** @deprecated legacy name kept for ported callers; use nativeType() */
-    public function pimcoreType(string $fieldType): string
-    {
-        return $this->nativeType($fieldType);
     }
 
     /**
@@ -213,7 +215,7 @@ final class SchemaService
                 return [];
             }
 
-            return [['name' => $field, 'type' => $this->nativeType((string) $cfg['type']), 'data' => $this->normalizeValue($cfg, $value)]];
+            return [['name' => $field, 'type' => $this->nativeType((string) ($cfg['type'] ?? 'input')), 'data' => $this->normalizeValue($cfg, $value)]];
         }
 
         $out = [];
@@ -225,7 +227,7 @@ final class SchemaService
             if (($err = $this->validateValue($cfg, $default)) !== null) {
                 throw new \InvalidArgumentException('Invalid default: '.$err.'.');
             }
-            $out[] = ['name' => (string) $cfg['name'], 'type' => $this->nativeType((string) $cfg['type']), 'data' => $this->normalizeValue($cfg, $default)];
+            $out[] = ['name' => (string) $cfg['name'], 'type' => $this->nativeType((string) ($cfg['type'] ?? 'input')), 'data' => $this->normalizeValue($cfg, $default)];
         }
 
         return $out;

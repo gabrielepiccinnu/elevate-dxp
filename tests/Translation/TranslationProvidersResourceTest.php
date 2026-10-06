@@ -51,7 +51,7 @@ final class TranslationProvidersResourceTest extends TestCase
         self::assertStringContainsString('[DE] Hello world', $r->runAction('test', 'pseudo', [])['message']);
     }
 
-    /** @return iterable<string,array{string,array}> */
+    /** @return iterable<string, array{string, array<string, mixed>}> */
     public static function invalidInput(): iterable
     {
         yield 'unknown provider' => ['translate', ['provider' => 'nope', 'from' => 'en', 'to' => 'de', 'text' => 'x']];
@@ -63,6 +63,7 @@ final class TranslationProvidersResourceTest extends TestCase
         yield 'unknown action' => ['nope', []];
     }
 
+    /** @param array<string, mixed> $params */
     #[\PHPUnit\Framework\Attributes\DataProvider('invalidInput')]
     public function testInvalidInputIsRejected(string $action, array $params): void
     {

@@ -26,6 +26,11 @@ final class Experiment
     ) {
     }
 
+    /**
+     * Builds an experiment from a database row; "variants" may be a JSON string or an already decoded list.
+     *
+     * @param array<string, mixed> $row
+     */
     public static function fromRow(array $row): self
     {
         $variants = [];

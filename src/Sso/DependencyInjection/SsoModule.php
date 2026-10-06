@@ -29,7 +29,7 @@ final class SsoModule implements ModuleInterface
 
     /**
      * Merges all providers' role maps into one (deny-by-default lookup table). When two providers
-     * map the same group, the later provider wins (legacy behaviour).
+     * map the same group, the later provider wins.
      *
      * @param array<string,array{role_mapping?:array<string,string>}> $providers
      *

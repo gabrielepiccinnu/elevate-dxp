@@ -5,19 +5,25 @@ declare(strict_types=1);
 namespace ElevateDxp\Tests\Webhook\Admin;
 
 use ElevateDxp\Tests\Webhook\Webhook\Fakes;
+use ElevateDxp\Tests\Webhook\Webhook\RecordingMessageBus;
 use ElevateDxp\Webhook\Admin\WebhookSubscriptionResource;
 use ElevateDxp\Webhook\Message\SendWebhookMessage;
 use ElevateDxp\Webhook\Webhook\SubscriptionRegistry;
 use ElevateDxp\Webhook\Webhook\WebhookDispatcher;
 use GuzzleHttp\Psr7\Response;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Messenger\MessageBusInterface;
+use Psr\Http\Message\ResponseInterface;
 
+/**
+ * @phpstan-import-type History from Fakes
+ */
 final class WebhookSubscriptionResourceTest extends TestCase
 {
-    private MessageBusInterface $bus;
+    private RecordingMessageBus $bus;
+    /** @var History */
     private array $history = [];
 
+    /** @param list<ResponseInterface|\Throwable> $responses */
     private function resource(array $responses = [], bool $enabled = true): WebhookSubscriptionResource
     {
         $registry = new SubscriptionRegistry([

@@ -6,7 +6,7 @@ namespace ElevateDxp\Webhook\Webhook;
 
 /**
  * Read-only view of the configured subscriptions (elevate_dxp_webhook.subscriptions).
- * Editing stays in YAML (GitOps-friendly), as in the legacy bundle.
+ * Subscriptions are edited in YAML only, so they stay versioned with the application (GitOps-friendly).
  */
 final class SubscriptionRegistry
 {

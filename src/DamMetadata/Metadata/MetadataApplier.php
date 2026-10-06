@@ -24,7 +24,8 @@ final class MetadataApplier
     }
 
     /**
-     * Legacy entry point: set one field on every asset matching the schema.
+     * Sets one field (overwriting) on every asset matching the schema, scanning from the
+     * schema's path prefix.
      *
      * @return array{matched:int,updated:int,error:?string}
      */
@@ -66,8 +67,8 @@ final class MetadataApplier
                 if ($requireFolder) {
                     return ['error' => "Asset folder '$root' not found."] + $result;
                 }
-                // legacy apply(): a path prefix that is not a folder (e.g. "/img/prod") -> scan its parent;
-                // the schema prefix filter (assetMatches) keeps the legacy semantics.
+                // apply(): a path prefix that is not a folder (e.g. "/img/prod") -> scan its parent;
+                // the schema prefix filter (assetMatches) still restricts the matched assets.
                 $root = \dirname($root);
             }
         }
@@ -113,7 +114,7 @@ final class MetadataApplier
                     $asset->save();
                     ++$result['updated'];
                 } catch (\Throwable) {
-                    ++$result['failed']; // skip individual failures, as the legacy bundle did
+                    ++$result['failed']; // count the failure and continue with the next asset
                 }
             }
         } while (\count($assets) === $this->batchSize);

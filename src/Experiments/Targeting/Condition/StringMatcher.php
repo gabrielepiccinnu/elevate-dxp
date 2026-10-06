@@ -27,6 +27,7 @@ final class StringMatcher
         };
     }
 
+    /** @param array<string, mixed> $config */
     public static function mode(array $config): string
     {
         $mode = (string) ($config['mode'] ?? 'equals');

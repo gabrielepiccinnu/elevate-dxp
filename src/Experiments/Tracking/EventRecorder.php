@@ -23,6 +23,7 @@ final class EventRecorder
 
     /**
      * @param array<string,string> $assignments current experiment assignments of the visitor
+     * @param array<string,mixed>  $metadata    extra event properties
      */
     public function record(
         string $visitorId,

@@ -15,7 +15,4 @@ final class BpmnNamespaces
     /** Extension attributes (type, subject, guard, notes, place meta). */
     public const DXPP = 'http://elevate-dxp/bpmn';
     public const DXPP_PREFIX = 'elevatedxp';
-
-    /** Namespace written by the legacy OpenPimcore designer; still accepted on import. */
-    public const LEGACY = 'http://openpimcore/bpmn';
 }

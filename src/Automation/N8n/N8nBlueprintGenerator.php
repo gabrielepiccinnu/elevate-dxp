@@ -103,6 +103,7 @@ final class N8nBlueprintGenerator
         ];
     }
 
+    /** @param array<string, mixed> $blueprint */
     public function toJson(array $blueprint): string
     {
         return (string) json_encode($blueprint, \JSON_PRETTY_PRINT | \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE);

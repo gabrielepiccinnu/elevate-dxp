@@ -77,17 +77,6 @@ class CollectionRepository
         return true;
     }
 
-    /** @return list<array{id:int,name:string,count:int,created_at:string}> legacy shape */
-    public function allForOwner(string $owner): array
-    {
-        return array_map(static fn (array $r): array => [
-            'id' => (int) $r['id'],
-            'name' => (string) $r['name'],
-            'count' => (int) $r['item_count'],
-            'created_at' => (string) $r['created_at'],
-        ], $this->search($owner, '', 0, 0)['rows']);
-    }
-
     /**
      * Paged listing with item counts and share state.
      *

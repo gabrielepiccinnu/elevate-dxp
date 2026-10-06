@@ -44,7 +44,11 @@ final class WebhookDispatcher
         return $count;
     }
 
-    /** Queues (re-)delivery of one event to one named subscription. */
+    /**
+     * Queues (re-)delivery of one event to one named subscription.
+     *
+     * @param array<string, mixed> $payload
+     */
     public function dispatchTo(string $subscription, string $event, array $payload): void
     {
         if ($this->subscriptions->get($subscription) === null) {

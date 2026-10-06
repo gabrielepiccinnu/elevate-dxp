@@ -47,7 +47,11 @@ final class VisitorProfileDataProvider implements DataProviderInterface
         ]);
     }
 
-    /** @return array<string,string> */
+    /**
+     * @param array<array-key, mixed> $query request query parameters
+     *
+     * @return array<string,string>
+     */
     public static function currentUtm(array $query): array
     {
         $utm = [];

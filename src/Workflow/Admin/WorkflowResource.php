@@ -20,7 +20,7 @@ use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
 
 /**
- * Workflow designer (replaces the Studio bpmn-js designer): CRUD over the YAML store, the
+ * Workflow designer: CRUD over the YAML store, the
  * places/transitions edited as YAML or JSON, plus validate, Mermaid preview, BPMN export/import,
  * export of the generated opendxp.workflows config and apply (requires cache:clear).
  */
@@ -215,7 +215,11 @@ final class WorkflowResource extends AbstractAdminResource
         return $html.'<pre style="background:#f6f8fa;padding:8px;white-space:pre-wrap">'.htmlspecialchars($code, \ENT_QUOTES).'</pre>';
     }
 
-    /** Builds a definition from the edit form: top-level fields + YAML/JSON "definition" block. */
+    /**
+     * Builds a definition from the edit form: top-level fields + YAML/JSON "definition" block.
+     *
+     * @param array<string, mixed> $data
+     */
     public function definitionFromForm(array $data): WorkflowDefinition
     {
         $raw = $data['definition'] ?? '';
@@ -248,6 +252,7 @@ final class WorkflowResource extends AbstractAdminResource
         }
     }
 
+    /** @return array<string, mixed> */
     private function row(WorkflowDefinition $def, bool $withDefinition): array
     {
         $errors = $this->validator->validate($def);

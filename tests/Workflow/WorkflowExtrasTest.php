@@ -103,15 +103,15 @@ final class WorkflowExtrasTest extends TestCase
         self::assertStringContainsString("placeMeta 'ghost'", $joined);
     }
 
-    public function testImportAcceptsLegacyOpenPimcoreNamespace(): void
+    public function testImportReadsElevateDxpExtensionAttributes(): void
     {
         $xml = <<<XML
         <?xml version="1.0" encoding="UTF-8"?>
-        <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:openpimcore="http://openpimcore/bpmn">
-          <bpmn:process id="legacy" openpimcore:type="workflow" openpimcore:subject="Article">
+        <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:elevatedxp="http://elevate-dxp/bpmn">
+          <bpmn:process id="article" elevatedxp:type="workflow" elevatedxp:subject="Article">
             <bpmn:task id="a" name="a"/>
-            <bpmn:task id="b" name="b" openpimcore:color="#123456"/>
-            <bpmn:sequenceFlow id="go" name="go" sourceRef="a" targetRef="b" openpimcore:guard="is_fully_authenticated()"/>
+            <bpmn:task id="b" name="b" elevatedxp:color="#123456"/>
+            <bpmn:sequenceFlow id="go" name="go" sourceRef="a" targetRef="b" elevatedxp:guard="is_fully_authenticated()"/>
           </bpmn:process>
         </bpmn:definitions>
         XML;
@@ -122,12 +122,30 @@ final class WorkflowExtrasTest extends TestCase
         self::assertSame('is_fully_authenticated()', $def->transitions['go']['guard']);
     }
 
+    public function testImportIgnoresExtensionAttributesInOtherNamespaces(): void
+    {
+        $xml = <<<XML
+        <?xml version="1.0" encoding="UTF-8"?>
+        <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:other="http://example.com/bpmn">
+          <bpmn:process id="article" other:type="workflow" other:subject="Article">
+            <bpmn:task id="a" name="a"/>
+            <bpmn:task id="b" name="b" other:color="#123456"/>
+            <bpmn:sequenceFlow id="go" name="go" sourceRef="a" targetRef="b" other:guard="is_fully_authenticated()"/>
+          </bpmn:process>
+        </bpmn:definitions>
+        XML;
+        $def = (new BpmnToDefinitionMapper())->fromXml($xml);
+        self::assertSame('state_machine', $def->type);
+        self::assertSame('Product', $def->subject);
+        self::assertSame([], $def->placeMeta);
+        self::assertArrayNotHasKey('guard', $def->transitions['go']);
+    }
+
     public function testExportUsesElevateDxpNamespace(): void
     {
         $xml = (new DefinitionToBpmnMapper())->toXml(DemoWorkflow::create());
         self::assertStringContainsString('xmlns:elevatedxp="http://elevate-dxp/bpmn"', $xml);
         self::assertStringContainsString('elevatedxp:subject="Product"', $xml);
-        self::assertStringNotContainsString('openpimcore', $xml);
     }
 
     public function testImportRejectsDoctypeAndGarbage(): void

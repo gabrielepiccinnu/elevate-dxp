@@ -41,6 +41,7 @@ final class DataQualityResource extends AbstractAdminResource
         return InsightsInstaller::DATA_QUALITY;
     }
 
+    /** @return array<string, mixed> */
     public function getSchema(): array
     {
         $classes = $this->quality->classes();
@@ -72,6 +73,11 @@ final class DataQualityResource extends AbstractAdminResource
         return ['data' => $rows, 'total' => \count($rows)];
     }
 
+    /**
+     * @param array<string, mixed> $params
+     *
+     * @return array<string, mixed>
+     */
     public function runAction(string $action, ?string $id, array $params): array
     {
         if ($action !== 'worst') {

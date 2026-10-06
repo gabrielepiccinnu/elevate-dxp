@@ -15,6 +15,8 @@ use ElevateDxp\Portal\Security\CurrentOwner;
 /**
  * Saved portal searches (per user). Params use the same keys as the "Portal search" filters and
  * are validated/normalised through SearchQuery before storage. "Run" executes the view.
+ *
+ * @phpstan-import-type SavedView from SavedViewRepository
  */
 final class SavedViewResource extends AbstractAdminResource
 {
@@ -148,6 +150,11 @@ final class SavedViewResource extends AbstractAdminResource
         return Action::table($rows, \sprintf('%s — %d result(s), page %d', $view['name'], $result->total, $result->page), ['ref', 'key', 'fullPath', 'subtype', 'mimetype', 'modified']);
     }
 
+    /**
+     * @param SavedView $r
+     *
+     * @return array<string, mixed>
+     */
     private static function row(array $r): array
     {
         $p = $r['params'];

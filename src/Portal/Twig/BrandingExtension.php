@@ -7,10 +7,7 @@ namespace ElevateDxp\Portal\Twig;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
 
-/**
- * Exposes the portal branding / white-label settings to templates via edxp_branding()
- * (op_branding() is kept as an alias for templates ported from the legacy bundle).
- */
+/** Exposes the portal branding / white-label settings to templates via edxp_branding(). */
 final class BrandingExtension extends AbstractExtension
 {
     private const COLOR = '/^#(?:[0-9a-fA-F]{3}){1,2}$/';
@@ -24,7 +21,6 @@ final class BrandingExtension extends AbstractExtension
     {
         return [
             new TwigFunction('edxp_branding', $this->branding(...)),
-            new TwigFunction('op_branding', $this->branding(...)),
         ];
     }
 

@@ -44,7 +44,11 @@ final class AdminResourceRegistry
         return $user !== null && ($user->isAdmin() || $user->isAllowed($resource->getPermission()));
     }
 
-    /** Menu payload for the ExtJS startup script. */
+    /**
+     * Menu payload for the ExtJS startup script.
+     *
+     * @return list<array{key: string, label: string, group: string, iconCls: string, panel: mixed, jsClass: mixed}>
+     */
     public function features(?User $user): array
     {
         $out = [];

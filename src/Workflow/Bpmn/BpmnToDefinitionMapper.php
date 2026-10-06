@@ -17,8 +17,8 @@ use ElevateDxp\Workflow\Model\WorkflowDefinition;
  *     into one transition with multiple `from` places (and-join)
  *
  * Unsupported BPMN elements (gateways, events other than start, sub-processes) are ignored,
- * keeping the result always mappable to opendxp.workflows.*. Extension attributes are read from
- * the Elevate DXP namespace and, for documents exported by the legacy designer, the OpenPimcore one.
+ * keeping the result always mappable to opendxp.workflows.*. Extension attributes (type, subject,
+ * guard, notes, place metadata) are read from the Elevate DXP namespace.
  */
 final class BpmnToDefinitionMapper
 {
@@ -143,9 +143,7 @@ final class BpmnToDefinitionMapper
 
     private function ext(\DOMElement $el, string $attr): string
     {
-        $value = $el->getAttributeNS(BpmnNamespaces::DXPP, $attr);
-
-        return $value !== '' ? $value : $el->getAttributeNS(BpmnNamespaces::LEGACY, $attr);
+        return $el->getAttributeNS(BpmnNamespaces::DXPP, $attr);
     }
 
     /** @return list<\DOMElement> */

@@ -45,7 +45,7 @@ final class ElevateDxpBundle extends AbstractOpenDxpBundle implements OpenDxpBun
         return 'elevate-dxp/elevate-bundle';
     }
 
-    public function getInstaller(): ?InstallerInterface
+    public function getInstaller(): InstallerInterface
     {
         return $this->container->get(Installer::class);
     }

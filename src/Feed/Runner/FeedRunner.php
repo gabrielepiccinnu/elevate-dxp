@@ -64,7 +64,11 @@ final class FeedRunner
         return $this->templates->get($name);
     }
 
-    /** Summary rows for the admin list. */
+    /**
+     * Summary rows for the admin list.
+     *
+     * @return list<array<string, mixed>>
+     */
     public function describe(): array
     {
         $out = [];

@@ -51,11 +51,18 @@ final class SchemaBuildersTest extends TestCase
                 return 'p';
             }
 
+            /** @return array<string, mixed> */
             public function getSchema(): array
             {
                 return [];
             }
 
+            /**
+             * @param list<array<string, mixed>> $rows
+             * @param array<string, mixed>       $q
+             *
+             * @return array{data: list<array<string, mixed>>, total: int}
+             */
             public function page(array $rows, array $q): array
             {
                 return $this->paginate($rows, $q);
@@ -89,6 +96,7 @@ final class SchemaBuildersTest extends TestCase
                 return 'p';
             }
 
+            /** @return array<string, mixed> */
             public function getSchema(): array
             {
                 return [];

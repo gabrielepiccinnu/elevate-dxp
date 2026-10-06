@@ -138,7 +138,11 @@ final class EndpointResource extends AbstractAdminResource
         return Action::text($text, 'Try request: '.$endpoint, 'json');
     }
 
-    /** @param array{name:string,type:string,class:string,path:string,fields:array<string,string>} $row */
+    /**
+     * @param array{name:string,type:string,class:string,path:string,fields:array<string,string>} $row
+     *
+     * @return array<string, mixed>
+     */
     private function decorate(array $row): array
     {
         return $row + [

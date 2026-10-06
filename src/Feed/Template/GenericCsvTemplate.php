@@ -7,8 +7,8 @@ namespace ElevateDxp\Feed\Template;
 use ElevateDxp\Export\Renderer\CsvRenderer;
 
 /**
- * Generic CSV feed: header from the mapped field names, with the export bundle's
- * formula-injection mitigation (the legacy bundle duplicated that code).
+ * Generic CSV feed: header from the mapped field names, rendered through the Export module's
+ * CsvRenderer so it shares its formula-injection mitigation.
  */
 final class GenericCsvTemplate implements FeedTemplateInterface
 {

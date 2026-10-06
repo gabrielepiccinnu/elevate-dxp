@@ -13,6 +13,7 @@ final class TrackedEvent implements AsyncMessageInterface
 {
     /**
      * @param array<string,string> $assignments experiment key => variant
+     * @param array<string,mixed>  $metadata    extra event properties forwarded to the analytics tool
      */
     public function __construct(
         public readonly string $visitorId,

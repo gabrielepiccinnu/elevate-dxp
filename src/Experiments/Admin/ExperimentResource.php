@@ -62,11 +62,13 @@ final class ExperimentResource extends AbstractDbalResource
         return 'edxp_experiment';
     }
 
+    /** @return list<string> */
     protected function getSearchColumns(): array
     {
         return ['exp_key', 'name', 'goal_event'];
     }
 
+    /** @return array<string, mixed> */
     public function getSchema(): array
     {
         $groups = ['' => '— all visitors —'];
@@ -114,6 +116,12 @@ final class ExperimentResource extends AbstractDbalResource
         ];
     }
 
+    /**
+     * @param array<string, mixed>      $data
+     * @param array<string, mixed>|null $existing
+     *
+     * @return array<string, mixed>
+     */
     protected function beforeSave(array $data, ?array $existing): array
     {
         $key = trim((string) ($data['exp_key'] ?? ''));
@@ -185,6 +193,11 @@ final class ExperimentResource extends AbstractDbalResource
         return $data;
     }
 
+    /**
+     * @param array<string, mixed> $params
+     *
+     * @return array<string, mixed>
+     */
     public function runAction(string $action, ?string $id, array $params): array
     {
         $experiment = $id !== null ? $this->experiments->find((int) $id) : null;

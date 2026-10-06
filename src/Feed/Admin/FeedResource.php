@@ -13,7 +13,7 @@ use ElevateDxp\Feed\Runner\FeedRunner;
 
 /**
  * Admin view of the YAML-defined product feeds (read-only; editing stays in config) with
- * "Validate", "Preview" and "Export" actions. Replaces the legacy Studio feed panel.
+ * "Validate", "Preview" and "Export" actions.
  */
 final class FeedResource extends AbstractAdminResource
 {
@@ -123,6 +123,7 @@ final class FeedResource extends AbstractAdminResource
         }
     }
 
+    /** @return array<string, mixed> */
     private function validate(string $feed): array
     {
         $built = $this->runner->build($feed);
@@ -139,6 +140,11 @@ final class FeedResource extends AbstractAdminResource
         return Action::table($rows, \sprintf('%s: %d of %d rows with missing required fields', $feed, \count($rows), $total), ['row', 'id', 'missing']);
     }
 
+    /**
+     * @param array<string, mixed> $params
+     *
+     * @return array<string, mixed>
+     */
     private function preview(string $feed, array $params): array
     {
         $limit = (int) ($params['limit'] ?? 20);
@@ -168,6 +174,7 @@ final class FeedResource extends AbstractAdminResource
         return Action::table($rows, \sprintf('Preview: %s (%d rows, %d with issues)', $feed, \count($rows), \count($built['issues'])));
     }
 
+    /** @return array<string, mixed> */
     private function export(string $feed): array
     {
         $result = $this->runner->export($feed, ExportResource::actor());

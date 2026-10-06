@@ -42,6 +42,8 @@ final class SearchQuery
     /**
      * Accepted keys: type, q|text, class, path, min, max, range_field, ranges[{field,min,max}],
      * order_by, order_dir, page, page_size (or start + limit).
+     *
+     * @param array<string, mixed> $p
      */
     public static function fromArray(array $p, int $defaultPageSize = 24, int $maxPageSize = 100, ?string $defaultClass = null): self
     {
@@ -88,7 +90,11 @@ final class SearchQuery
         );
     }
 
-    /** Serialisable form (saved views); round-trips through fromArray(). */
+    /**
+     * Serialisable form (saved views); round-trips through fromArray().
+     *
+     * @return array<string, mixed>
+     */
     public function toArray(): array
     {
         $out = ['type' => $this->type];

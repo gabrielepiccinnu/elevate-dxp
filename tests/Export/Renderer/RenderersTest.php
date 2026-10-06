@@ -10,7 +10,7 @@ use ElevateDxp\Export\Renderer\XmlRenderer;
 use ElevateDxp\Export\Target\PathGuard;
 use PHPUnit\Framework\TestCase;
 
-/** Ported from the legacy OpenPimcore\Tests\ExportBundle\RenderersTest, plus extra cases. */
+/** CSV/JSON/XML renderers and target path guard. */
 final class RenderersTest extends TestCase
 {
     public function testCsvHeaderAndFormulaInjectionGuard(): void

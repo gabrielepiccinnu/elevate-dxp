@@ -12,7 +12,7 @@ use ElevateDxp\Export\Runner\ExportRunner;
 
 /**
  * Admin view of the YAML-defined export jobs (read-only; editing stays in config) with
- * "Run" and "Preview" actions. Replaces the legacy Studio export panel.
+ * "Run" and "Preview" actions.
  */
 final class ExportResource extends AbstractAdminResource
 {
@@ -121,6 +121,7 @@ final class ExportResource extends AbstractAdminResource
         return $user !== null ? 'admin:'.$user->getName() : 'admin';
     }
 
+    /** @return array<string, mixed> */
     private function run(string $job, string $actor): array
     {
         try {
@@ -134,6 +135,11 @@ final class ExportResource extends AbstractAdminResource
         return Action::message(\sprintf('Exported %d rows to %s', $result['rows'], $result['location']));
     }
 
+    /**
+     * @param array<string, mixed> $params
+     *
+     * @return array<string, mixed>
+     */
     private function preview(string $job, array $params): array
     {
         $limit = (int) ($params['limit'] ?? 20);

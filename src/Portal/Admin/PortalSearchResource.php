@@ -15,7 +15,7 @@ use ElevateDxp\Portal\Search\PortalSearchService;
 use ElevateDxp\Portal\Security\CurrentOwner;
 
 /**
- * "Portal search" report: replaces the Studio DAM-portal search + cart panel.
+ * "Portal search" report: DAM portal search with a session download cart.
  * Filters drive the configured search backend; global actions manage the session cart.
  */
 final class PortalSearchResource extends AbstractAdminResource
@@ -151,7 +151,11 @@ final class PortalSearchResource extends AbstractAdminResource
         return parent::runAction($action, $id, $params);
     }
 
-    /** @param array<string,mixed> $item */
+    /**
+     * @param array<string,mixed> $item
+     *
+     * @return array<string, mixed>
+     */
     public static function row(array $item): array
     {
         $modified = $item['modificationDate'] ?? null;

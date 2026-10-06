@@ -52,6 +52,9 @@ final class ExperimentRepository implements ResetInterface
         return array_map(Experiment::fromRow(...), $this->db->fetchAllAssociative('SELECT * FROM edxp_experiment ORDER BY exp_key'));
     }
 
+    /**
+     * @param list<array<string, mixed>> $variants serialised variants (see Variant::toArray())
+     */
     public function updateVariants(int $id, array $variants): void
     {
         $this->db->update('edxp_experiment', ['variants' => json_encode($variants, \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE)], ['id' => $id]);

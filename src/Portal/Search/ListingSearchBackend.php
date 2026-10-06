@@ -13,7 +13,7 @@ use OpenDxp\Model\Listing\AbstractListing;
 /**
  * Default portal search backend over plain OpenDXP listings (no index required).
  *
- * Replaces the legacy Generic Data Index search:
+ * Search semantics:
  *  - full text   → LIKE on configured columns (each term must match one column), plus asset metadata;
  *  - ranges      → numeric >= / <= on allow-listed fields;
  *  - folders     → excluded for assets (type != folder); object listings only return objects;
@@ -134,7 +134,10 @@ final class ListingSearchBackend implements SearchBackendInterface
         return new SearchResult($items, $listing->count(), $query->page, $query->pageSize);
     }
 
-    /** @param list<mixed> $params */
+    /**
+     * @param list<mixed>  $params
+     * @param list<string> $allowedOrder
+     */
     private function apply(AbstractListing $listing, string $condition, array $params, SearchQuery $query, array $allowedOrder, string $defaultOrder): void
     {
         if ($condition !== '') {

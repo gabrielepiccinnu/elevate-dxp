@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace ElevateDxp\Experiments\EventListener;
 
 use ElevateDxp\Experiments\Experiment\ExperimentRuntime;
-use ElevateDxp\Experiments\Repository\ExperimentRepository;
 use ElevateDxp\Experiments\Repository\VisitorProfileRepository;
 use ElevateDxp\Experiments\Targeting\DataProvider\VisitorProfileDataProvider;
 use ElevateDxp\Experiments\Visitor\VisitorIdResolver;
@@ -26,7 +25,6 @@ final class ResponseSubscriber implements EventSubscriberInterface
     public function __construct(
         private readonly VisitorIdResolver $visitorIdResolver,
         private readonly ExperimentRuntime $runtime,
-        private readonly ExperimentRepository $experiments,
         private readonly VisitorProfileRepository $profiles,
         private readonly VisitorInfoStorageInterface $visitorInfoStorage,
         private readonly RequestHelper $requestHelper,

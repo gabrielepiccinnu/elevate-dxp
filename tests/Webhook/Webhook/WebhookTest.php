@@ -18,7 +18,6 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Messenger\Exception\RecoverableExceptionInterface;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
 
-/** Ported from OpenPimcore\Tests\WebhookBundle\WebhookTest, plus coverage for the new behaviour. */
 final class WebhookTest extends TestCase
 {
     public function testSenderSignsPayloadWithHmac(): void
@@ -147,7 +146,7 @@ final class WebhookTest extends TestCase
             self::fail('Expected a delivery failure.');
         } catch (WebhookDeliveryFailedException $e) {
             // must go through the bounded retry strategy, not the unconditional "recoverable" path
-            self::assertNotInstanceOf(RecoverableExceptionInterface::class, $e);
+            self::assertFalse((new \ReflectionClass($e))->implementsInterface(RecoverableExceptionInterface::class));
         }
     }
 

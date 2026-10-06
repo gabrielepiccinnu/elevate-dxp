@@ -37,10 +37,4 @@ final class WebhookInstaller extends ModuleInstaller
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci',
         ];
     }
-
-    /** @return list<string> exposed for the install command and tests */
-    public function schemaStatements(): array
-    {
-        return $this->getSchema();
-    }
 }

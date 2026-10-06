@@ -6,6 +6,7 @@ namespace ElevateDxp\Tests\Webhook\Admin;
 
 use Doctrine\DBAL\Connection;
 use ElevateDxp\Tests\Webhook\Webhook\Fakes;
+use ElevateDxp\Tests\Webhook\Webhook\RecordingMessageBus;
 use ElevateDxp\Webhook\Admin\WebhookDeliveryResource;
 use ElevateDxp\Webhook\Message\SendWebhookMessage;
 use ElevateDxp\Webhook\Webhook\SubscriptionRegistry;
@@ -13,12 +14,12 @@ use ElevateDxp\Webhook\Webhook\WebhookDispatcher;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Exception\HandlerFailedException;
-use Symfony\Component\Messenger\MessageBusInterface;
 
 final class WebhookDeliveryResourceTest extends TestCase
 {
-    private MessageBusInterface $bus;
+    private RecordingMessageBus $bus;
 
+    /** @param array<string, mixed>|false $row */
     private function resource(array|false $row, ?\Throwable $busFailure = null): WebhookDeliveryResource
     {
         $db = $this->createStub(Connection::class);
@@ -33,6 +34,7 @@ final class WebhookDeliveryResourceTest extends TestCase
         return new WebhookDeliveryResource($db, new WebhookDispatcher($registry, $this->bus), $registry);
     }
 
+    /** @return array<string, mixed> */
     private function row(string $subscription = 'erp'): array
     {
         return ['id' => 5, 'subscription' => $subscription, 'event' => 'object.update', 'url' => 'http://erp', 'status' => 'failed',

@@ -14,6 +14,10 @@ use Symfony\Component\Config\Definition\Processor;
 
 final class StatisticsReportResourceTest extends TestCase
 {
+    /**
+     * @param array<string, mixed>       $report
+     * @param list<array<string, mixed>> $rows
+     */
     private function resource(array $report, array $rows): StatisticsReportResource
     {
         $conn = $this->createStub(Connection::class);

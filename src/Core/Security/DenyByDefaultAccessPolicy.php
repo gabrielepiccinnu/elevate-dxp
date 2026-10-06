@@ -17,6 +17,7 @@ final class DenyByDefaultAccessPolicy implements AccessPolicyInterface
     ) {
     }
 
+    /** @param array<string, mixed> $context */
     public function isAllowed(string $action, array $context = []): bool
     {
         return $this->defaultPolicy === 'allow' || \in_array($action, $this->allowedActions, true);

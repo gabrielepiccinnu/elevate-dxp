@@ -178,7 +178,11 @@ final class SsoMappingResource extends AbstractAdminResource
         return $rows;
     }
 
-    /** Secrets are never shown. */
+    /**
+     * Secrets are never shown.
+     *
+     * @return list<array{setting: string, value: string}>
+     */
     private function settingsRows(): array
     {
         $rows = [

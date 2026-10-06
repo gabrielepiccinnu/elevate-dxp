@@ -1,0 +1,85 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Static analysis & code style
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: intl, pdo_mysql, gd, zip, bcmath, dom, exif
+          coverage: none
+      - uses: ramsey/composer-install@v3
+      - name: Validate composer.json
+        run: composer validate --strict --no-check-lock
+      - name: PHP-CS-Fixer
+        run: vendor/bin/php-cs-fixer fix --dry-run --diff
+      - name: PHPStan
+        run: vendor/bin/phpstan analyse -c phpstan.neon.dist --memory-limit=2G --no-progress
+
+  unit:
+    name: Unit tests (PHP ${{ matrix.php }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.3', '8.4', '8.5']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: intl, pdo_mysql, gd, zip, bcmath, dom, exif
+          coverage: none
+      - uses: ramsey/composer-install@v3
+      - run: vendor/bin/phpunit --testsuite unit
+
+  integration:
+    name: Integration (fresh OpenDXP + MariaDB)
+    runs-on: ubuntu-latest
+    needs: [unit]
+    services:
+      mariadb:
+        image: mariadb:10.11
+        env:
+          MARIADB_ROOT_PASSWORD: root
+          MARIADB_DATABASE: opendxp
+          MARIADB_USER: opendxp
+          MARIADB_PASSWORD: opendxp
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=10s --health-timeout=5s --health-retries=12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: intl, pdo_mysql, gd, zip, bcmath, dom, exif, imagick
+          coverage: none
+          tools: composer:v2
+      - name: Install OpenDXP, the bundle and run HTTP smoke tests
+        env:
+          BUNDLE_DIR: ${{ github.workspace }}
+          APP_DIR: ${{ runner.temp }}/opendxp-app
+          DB_HOST: 127.0.0.1
+          DB_PORT: '3306'
+          DB_USER: opendxp
+          DB_PASSWORD: opendxp
+          DB_NAME: opendxp
+        run: tests/Integration/install-and-smoke.sh

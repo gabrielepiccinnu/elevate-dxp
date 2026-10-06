@@ -14,8 +14,8 @@ use ElevateDxp\Translation\Provider\TranslationProviderInterface;
 use ElevateDxp\Translation\Xliff\XliffService;
 
 /**
- * Machine-translation providers (read-only, configured in YAML) with the translation tools that
- * replaced the Studio "Translation" panel: translate text, build an XLIFF file, auto-fill XLIFF.
+ * Machine-translation providers (read-only, configured in YAML) with the translation tools:
+ * translate text, build an XLIFF file, auto-fill XLIFF.
  */
 final class TranslationProvidersResource extends AbstractAdminResource
 {
@@ -144,6 +144,7 @@ final class TranslationProvidersResource extends AbstractAdminResource
         };
     }
 
+    /** @return array<string, mixed> */
     private function test(string $name): array
     {
         $provider = $this->providers->getOrFail($name);
@@ -157,6 +158,11 @@ final class TranslationProvidersResource extends AbstractAdminResource
         return Action::message(\sprintf('Provider "%s": "%s" -> "%s"', $name, $sample, $translated));
     }
 
+    /**
+     * @param array<string, mixed> $params
+     *
+     * @return array<string, mixed>
+     */
     private function translate(array $params): array
     {
         $provider = $this->provider($params);
@@ -177,6 +183,11 @@ final class TranslationProvidersResource extends AbstractAdminResource
         return Action::table([$row], 'Translation');
     }
 
+    /**
+     * @param array<string, mixed> $params
+     *
+     * @return array<string, mixed>
+     */
     private function build(array $params): array
     {
         [$from, $to] = $this->languagePair($params);
@@ -201,6 +212,11 @@ final class TranslationProvidersResource extends AbstractAdminResource
         return Action::text($this->xliff->toXliff($clean, $from, $to), 'XLIFF '.$from.' -> '.$to);
     }
 
+    /**
+     * @param array<string, mixed> $params
+     *
+     * @return array<string, mixed>
+     */
     private function fill(array $params): array
     {
         $provider = $this->provider($params);
@@ -220,6 +236,7 @@ final class TranslationProvidersResource extends AbstractAdminResource
         return Action::text($filled, 'Auto-translated XLIFF ('.$provider->name().')');
     }
 
+    /** @param array<string, mixed> $params */
     private function provider(array $params): TranslationProviderInterface
     {
         $name = trim((string) ($params['provider'] ?? ''));
@@ -227,7 +244,11 @@ final class TranslationProvidersResource extends AbstractAdminResource
         return $name === '' ? $this->providers->get() : $this->providers->getOrFail($name);
     }
 
-    /** @return array{0:string,1:string} */
+    /**
+     * @param array<string, mixed> $params
+     *
+     * @return array{0:string,1:string}
+     */
     private function languagePair(array $params): array
     {
         $pair = [];

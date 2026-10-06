@@ -8,7 +8,6 @@ use ElevateDxp\Translation\Provider\PseudoProvider;
 use ElevateDxp\Translation\Xliff\XliffService;
 use PHPUnit\Framework\TestCase;
 
-/** Ported from OpenPimcore\Tests\TranslationBundle\XliffTest, plus native-export and hardening cases. */
 final class XliffTest extends TestCase
 {
     public function testRoundTrip(): void

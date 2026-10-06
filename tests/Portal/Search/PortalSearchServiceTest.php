@@ -61,7 +61,7 @@ final class PortalSearchServiceTest extends TestCase
         $service->searchDataObjects('Product');
     }
 
-    public function testLegacyApiMapsPriceRangeOrderAndPageSizeBound(): void
+    public function testConvenienceApiMapsPriceRangeOrderAndPageSizeBound(): void
     {
         $seen = null;
         $service = new PortalSearchService([$this->backend('listing', true, $seen)], 'listing', 24, 50);

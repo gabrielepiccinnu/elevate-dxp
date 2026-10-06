@@ -61,7 +61,8 @@ final class SsoDecisionTest extends TestCase
         self::assertTrue($plan->admin);
         self::assertSame(['Editor'], $plan->roleNames);
         self::assertFalse(RolePlan::fromIdentity(new IdentityDescriptor('u', null, ['Editor']))->admin);
-        self::assertTrue(RolePlan::isAdminAlias('ROLE_PIMCORE_ADMIN'), 'legacy alias kept');
+        self::assertTrue(RolePlan::isAdminAlias('role_opendxp_admin'), 'aliases are case-insensitive');
+        self::assertFalse(RolePlan::isAdminAlias('ROLE_ADMIN'));
     }
 
     public function testMergedMappingLaterProviderWins(): void

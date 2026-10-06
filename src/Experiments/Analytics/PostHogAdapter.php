@@ -30,6 +30,11 @@ final class PostHogAdapter implements AnalyticsAdapterInterface
         $this->httpClient->request('POST', rtrim($this->host, '/').'/capture/', ['json' => self::payload($this->apiKey, $event)])->getStatusCode();
     }
 
+    /**
+     * Builds the PostHog /capture/ body; experiment assignments become "$feature/<key>" properties.
+     *
+     * @return array{api_key: string, event: string, distinct_id: string, properties: array<string, mixed>, timestamp: string}
+     */
     public static function payload(string $apiKey, TrackedEvent $event): array
     {
         $properties = ['$current_url' => $event->url, 'edxp_type' => $event->type, 'value' => $event->value] + $event->metadata;

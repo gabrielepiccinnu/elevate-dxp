@@ -45,8 +45,8 @@ final class DatahubTest extends TestCase
     private function controller(string $apiKey = self::KEY, bool $enabled = true): ApiController
     {
         $audit = new class($this->events) implements AuditLoggerInterface {
-            /** @param list<AuditEvent> $events */
-            public function __construct(private array &$events)
+            /** @param list<AuditEvent> $events shared with the test case by reference */
+            public function __construct(public array &$events)
             {
             }
 
@@ -59,6 +59,7 @@ final class DatahubTest extends TestCase
         return new ApiController($enabled, 'X-Elevate-Dxp-Api-Key', $apiKey, $this->executor(), $audit);
     }
 
+    /** @param array<string, string> $query */
     private function request(array $query = [], ?string $key = self::KEY): Request
     {
         $server = $key === null ? [] : ['HTTP_X_ELEVATE_DXP_API_KEY' => $key];
@@ -66,6 +67,7 @@ final class DatahubTest extends TestCase
         return Request::create('/elevate-dxp/api/products', 'GET', $query, [], [], $server);
     }
 
+    /** @return array<string, mixed> */
     private static function body(\Symfony\Component\HttpFoundation\Response $r): array
     {
         return json_decode((string) $r->getContent(), true, 512, \JSON_THROW_ON_ERROR);
@@ -195,7 +197,11 @@ final class DatahubTest extends TestCase
 
     public function testGraphqlResourceMapsConfigurationsWithoutSecrets(): void
     {
-        $config = new class {
+        $config = new class(null) {
+            public function __construct(private readonly ?string $group)
+            {
+            }
+
             public function getName(): string
             {
                 return 'blog';
@@ -208,7 +214,7 @@ final class DatahubTest extends TestCase
 
             public function getGroup(): ?string
             {
-                return null;
+                return $this->group;
             }
 
             public function isActive(): bool
@@ -216,11 +222,13 @@ final class DatahubTest extends TestCase
                 return true;
             }
 
+            /** @return array<string, mixed> */
             public function getConfiguration(): array
             {
                 return ['general' => ['description' => 'Blog API'], 'security' => ['apikey' => ['top-secret']]];
             }
 
+            /** @return array<string, mixed> */
             public function getSecurityConfig(): array
             {
                 return $this->getConfiguration()['security'];
@@ -251,7 +259,8 @@ final class DatahubTest extends TestCase
 
             return;
         }
-        self::assertTrue(method_exists(GraphqlConfigurationResource::DATAHUB_CONFIGURATION, 'getList'));
+        // The default loader calls Configuration::getList() statically.
+        self::assertTrue((new \ReflectionMethod(GraphqlConfigurationResource::DATAHUB_CONFIGURATION, 'getList'))->isStatic());
     }
 }
 

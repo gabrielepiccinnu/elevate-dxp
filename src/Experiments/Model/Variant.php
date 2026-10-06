@@ -6,6 +6,9 @@ namespace ElevateDxp\Experiments\Model;
 
 final class Variant
 {
+    /**
+     * @param array<string, mixed> $payload free-form data exposed to templates for this variant
+     */
     public function __construct(
         public readonly string $key,
         public readonly int $weight = 1,
@@ -14,6 +17,9 @@ final class Variant
     ) {
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     public static function fromArray(array $data): self
     {
         $key = trim((string) ($data['key'] ?? ''));
@@ -29,6 +35,9 @@ final class Variant
         return new self($key, $weight, \is_array($data['payload'] ?? null) ? $data['payload'] : [], $tg !== null && $tg !== '' ? (int) $tg : null);
     }
 
+    /**
+     * @return array{key: string, weight: int, payload: array<string, mixed>, target_group_id: int|null}
+     */
     public function toArray(): array
     {
         return ['key' => $this->key, 'weight' => $this->weight, 'payload' => $this->payload, 'target_group_id' => $this->targetGroupId];

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ElevateDxp\Tests\Webhook;
 
 use ElevateDxp\Tests\Webhook\Webhook\Fakes;
+use ElevateDxp\Tests\Webhook\Webhook\RecordingMessageBus;
 use ElevateDxp\Webhook\EventSubscriber\ElementWebhookSubscriber;
 use ElevateDxp\Webhook\Message\SendWebhookMessage;
 use ElevateDxp\Webhook\Webhook\SubscriptionRegistry;
@@ -20,11 +21,10 @@ use OpenDxp\Model\Asset;
 use OpenDxp\Model\DataObject\AbstractObject;
 use OpenDxp\Model\Document;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Messenger\MessageBusInterface;
 
 final class ElementWebhookSubscriberTest extends TestCase
 {
-    private MessageBusInterface $bus;
+    private RecordingMessageBus $bus;
 
     private function subscriber(?\Throwable $busFailure = null): ElementWebhookSubscriber
     {

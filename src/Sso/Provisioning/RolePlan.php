@@ -8,11 +8,11 @@ use ElevateDxp\Sso\Identity\IdentityDescriptor;
 
 /**
  * What a mapped identity translates to in OpenDXP: the admin flag and the role names to assign.
- * The special values "admin", "ROLE_OPENDXP_ADMIN" (and legacy "ROLE_PIMCORE_ADMIN") set the admin flag.
+ * The special values "admin" and "ROLE_OPENDXP_ADMIN" (case-insensitive) set the admin flag.
  */
 final class RolePlan
 {
-    public const ADMIN_ALIASES = ['admin', 'ROLE_OPENDXP_ADMIN', 'ROLE_PIMCORE_ADMIN'];
+    public const ADMIN_ALIASES = ['admin', 'ROLE_OPENDXP_ADMIN'];
 
     /** @param list<string> $roleNames */
     public function __construct(

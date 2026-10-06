@@ -9,7 +9,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
  * Machine translation via a self-hostable LibreTranslate instance (OSS).
- * Best-effort, as in the legacy bundle: on any error the source text is returned, never lost.
+ * Best-effort: on any error the source text is returned, never lost (see lastError()).
  */
 final class LibreTranslateProvider implements TranslationProviderInterface
 {

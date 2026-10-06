@@ -7,7 +7,7 @@ namespace ElevateDxp\Tests\Automation\N8n;
 use ElevateDxp\Automation\N8n\N8nBlueprintGenerator;
 use PHPUnit\Framework\TestCase;
 
-/** Ported from OpenPimcore\Tests\AutomationBundle\N8nGeneratorTest. */
+/** n8n blueprint generation. */
 final class N8nGeneratorTest extends TestCase
 {
     private function gen(bool $enabled = true): N8nBlueprintGenerator

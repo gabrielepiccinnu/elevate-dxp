@@ -43,6 +43,7 @@ final class ExperimentReportResource extends AbstractAdminResource
         return ExperimentsInstaller::PERMISSION;
     }
 
+    /** @return array<string, mixed> */
     public function getSchema(): array
     {
         $options = [];

@@ -18,7 +18,7 @@ final class SegmentEvaluator
     ];
 
     /**
-     * @param array{conversions?:int, pageviews?:int, sessions?:int, utm_last?:mixed, experiments?:int} $p
+     * @param array<string, mixed> $p profile row; reads conversions, pageviews, sessions, utm_last and experiments
      */
     public static function matches(string $segment, array $p): bool
     {
@@ -32,7 +32,11 @@ final class SegmentEvaluator
         };
     }
 
-    /** @return list<string> */
+    /**
+     * @param array<string, mixed> $profile
+     *
+     * @return list<string>
+     */
     public static function segmentsOf(array $profile): array
     {
         return array_values(array_filter(array_keys(self::SEGMENTS), static fn (string $s): bool => self::matches($s, $profile)));

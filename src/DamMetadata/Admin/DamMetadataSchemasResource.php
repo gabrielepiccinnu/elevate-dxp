@@ -18,7 +18,6 @@ use OpenDxp\Security\User\TokenStorageUserResolver;
 /**
  * YAML-defined metadata schemas (read-only, GitOps) with actions: sync to native predefined
  * metadata, bulk apply to a folder, list native predefined metadata, inspect an asset.
- * Replaces the Studio "DAM Metadata" panel.
  */
 final class DamMetadataSchemasResource extends AbstractAdminResource
 {
@@ -153,6 +152,7 @@ final class DamMetadataSchemasResource extends AbstractAdminResource
         };
     }
 
+    /** @return array<string, mixed> */
     private function fields(string $schema): array
     {
         $cfg = $this->schemas->get($schema) ?? throw new \InvalidArgumentException("Unknown schema '$schema'.");
@@ -168,6 +168,11 @@ final class DamMetadataSchemasResource extends AbstractAdminResource
         return Action::table($rows, 'Fields of '.$this->schemas->label($schema), ['name', 'type', 'native_type', 'label', 'options', 'default']);
     }
 
+    /**
+     * @param array<string, mixed> $params
+     *
+     * @return array<string, mixed>
+     */
     private function syncPredefined(array $params): array
     {
         $user = $this->user();
@@ -187,6 +192,11 @@ final class DamMetadataSchemasResource extends AbstractAdminResource
             \count($r['created']), $r['created'] === [] ? '-' : implode(', ', $r['created']), $r['existing']), true);
     }
 
+    /**
+     * @param array<string, mixed> $params
+     *
+     * @return array<string, mixed>
+     */
     private function applyFolder(array $params): array
     {
         $user = $this->user();
@@ -217,6 +227,7 @@ final class DamMetadataSchemasResource extends AbstractAdminResource
             $r['matched'], $r['updated'], $r['unchanged'], $r['denied'], $r['failed']);
     }
 
+    /** @return array<string, mixed> */
     private function showAsset(string $path): array
     {
         $asset = ctype_digit($path) ? Asset::getById((int) $path) : Asset::getByPath($path);

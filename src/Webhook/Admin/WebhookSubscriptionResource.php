@@ -106,6 +106,11 @@ final class WebhookSubscriptionResource extends AbstractAdminResource
         };
     }
 
+    /**
+     * @param array<string, mixed> $params
+     *
+     * @return array<string, mixed>
+     */
     private function sendTest(?string $name, array $params): array
     {
         $subscription = $name !== null ? $this->subscriptions->get($name) : null;
@@ -129,6 +134,11 @@ final class WebhookSubscriptionResource extends AbstractAdminResource
         return Action::message(\sprintf('Test "%s" to "%s": %s', $event, $name, $result->describe()));
     }
 
+    /**
+     * @param array<string, mixed> $params
+     *
+     * @return array<string, mixed>
+     */
     private function dispatchTest(array $params): array
     {
         if (!$this->subscriptions->isEnabled()) {
@@ -140,6 +150,7 @@ final class WebhookSubscriptionResource extends AbstractAdminResource
         return Action::message(\sprintf('Dispatched "%s" to %d subscription(s).', $event, $count));
     }
 
+    /** @param array<string, mixed> $params */
     private function event(array $params): string
     {
         $event = (string) ($params['event'] ?? WebhookEvents::OBJECT_UPDATE);
@@ -150,6 +161,7 @@ final class WebhookSubscriptionResource extends AbstractAdminResource
         return $event;
     }
 
+    /** @return array<string, mixed> */
     private function row(string $name): array
     {
         $d = $this->subscriptions->describe($name) ?? [];

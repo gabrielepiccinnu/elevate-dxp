@@ -16,11 +16,13 @@ final class ReturningVisitor extends AbstractVariableCondition implements DataPr
     {
     }
 
+    /** @param array<string, mixed> $config */
     public static function fromConfig(array $config): self
     {
         return new self(max(1, (int) ($config['minSessions'] ?? 2)), filter_var($config['inverse'] ?? false, \FILTER_VALIDATE_BOOL));
     }
 
+    /** @return list<string> */
     public function getDataProviderKeys(): array
     {
         return [VisitorProfileDataProvider::PROVIDER_KEY];

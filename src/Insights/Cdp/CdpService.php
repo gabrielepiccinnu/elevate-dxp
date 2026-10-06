@@ -16,7 +16,13 @@ final class CdpService
     {
     }
 
-    /** Adds conversions, experiment count and segments to profile rows. */
+    /**
+     * Adds conversions, experiment count and segments to profile rows.
+     *
+     * @param list<array<string, mixed>> $rows profile rows, each with a "visitor_id"
+     *
+     * @return list<array<string, mixed>>
+     */
     public function enrich(array $rows): array
     {
         $ids = array_column($rows, 'visitor_id');
@@ -40,6 +46,11 @@ final class CdpService
         return $rows;
     }
 
+    /**
+     * Visitor count and share per built-in segment.
+     *
+     * @return list<array{segment: string, description: string, visitors: int, 'share_%': float|int}>
+     */
     public function summary(): array
     {
         $total = (int) $this->db->fetchOne('SELECT COUNT(*) FROM edxp_visitor_profile');
@@ -58,7 +69,11 @@ final class CdpService
         return $rows;
     }
 
-    /** Event timeline + experiment assignments of one visitor. */
+    /**
+     * Event timeline + experiment assignments of one visitor, newest first.
+     *
+     * @return list<array<string, mixed>>
+     */
     public function timeline(string $visitorId, int $limit = 200): array
     {
         $events = $this->db->fetchAllAssociative(

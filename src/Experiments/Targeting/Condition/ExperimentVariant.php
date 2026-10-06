@@ -16,6 +16,7 @@ final class ExperimentVariant extends AbstractVariableCondition implements DataP
     {
     }
 
+    /** @param array<string, mixed> $config */
     public static function fromConfig(array $config): self
     {
         return new self(
@@ -24,6 +25,7 @@ final class ExperimentVariant extends AbstractVariableCondition implements DataP
         );
     }
 
+    /** @return list<string> */
     public function getDataProviderKeys(): array
     {
         return [ExperimentsDataProvider::PROVIDER_KEY];

@@ -20,24 +20,42 @@ abstract class AbstractDbalResource extends AbstractAdminResource
 
     abstract protected function getTable(): string;
 
-    /** Columns searched by the free-text "q" filter. */
+    /**
+     * Columns searched by the free-text "q" filter.
+     *
+     * @return list<string>
+     */
     protected function getSearchColumns(): array
     {
         return ['name'];
     }
 
+    /** @return array{0: string, 1: 'ASC'|'DESC'} column and direction */
     protected function getDefaultSort(): array
     {
         return ['id', 'DESC'];
     }
 
-    /** Hook to validate/normalise data before it is written. */
+    /**
+     * Hook to validate/normalise data before it is written.
+     *
+     * @param array<string, mixed>      $data
+     * @param array<string, mixed>|null $existing
+     *
+     * @return array<string, mixed>
+     */
     protected function beforeSave(array $data, ?array $existing): array
     {
         return $data;
     }
 
-    /** Hook to enrich a row for the UI. */
+    /**
+     * Hook to enrich a row for the UI.
+     *
+     * @param array<string, mixed> $row
+     *
+     * @return array<string, mixed>
+     */
     protected function decorate(array $row): array
     {
         return $row;
@@ -51,7 +69,7 @@ abstract class AbstractDbalResource extends AbstractAdminResource
         $q = trim((string) ($query['q'] ?? ''));
         if ($q !== '') {
             $or = [];
-            foreach ($this->getSearchColumns() as $i => $col) {
+            foreach ($this->getSearchColumns() as $col) {
                 $or[] = 't.'.$this->db->quoteIdentifier($col).' LIKE :q';
             }
             if ($or !== []) {
@@ -85,6 +103,7 @@ abstract class AbstractDbalResource extends AbstractAdminResource
         return ['data' => $rows, 'total' => $total];
     }
 
+    /** @return array<string, mixed>|null */
     public function get(string $id): ?array
     {
         $row = $this->db->fetchAssociative(
@@ -95,10 +114,15 @@ abstract class AbstractDbalResource extends AbstractAdminResource
         return $row === false ? null : $this->decorate($this->decode($row));
     }
 
+    /**
+     * @param array<string, mixed> $data
+     *
+     * @return array<string, mixed>
+     */
     public function save(array $data): array
     {
         $idProp = $this->idProperty();
-        $id = isset($data[$idProp]) && $data[$idProp] !== '' && $data[$idProp] !== null ? (string) $data[$idProp] : null;
+        $id = isset($data[$idProp]) && $data[$idProp] !== '' ? (string) $data[$idProp] : null;
         $existing = $id !== null ? $this->get($id) : null;
         if ($id !== null && $existing === null) {
             throw new \InvalidArgumentException('Record not found: '.$id);
@@ -138,7 +162,13 @@ abstract class AbstractDbalResource extends AbstractAdminResource
         return $map;
     }
 
-    /** Keeps only writable, declared columns and serialises structured values. */
+    /**
+     * Keeps only writable, declared columns and serialises structured values.
+     *
+     * @param array<string, mixed> $data
+     *
+     * @return array<string, mixed>
+     */
     protected function encode(array $data): array
     {
         $row = [];
@@ -170,6 +200,13 @@ abstract class AbstractDbalResource extends AbstractAdminResource
         return $row;
     }
 
+    /**
+     * Turns a raw database row into UI values: JSON columns are decoded, bool columns cast.
+     *
+     * @param array<string, mixed> $row
+     *
+     * @return array<string, mixed>
+     */
     protected function decode(array $row): array
     {
         foreach ($this->fieldMap() as $name => $f) {
@@ -183,6 +220,11 @@ abstract class AbstractDbalResource extends AbstractAdminResource
         return $row;
     }
 
+    /**
+     * @param array<string, mixed> $row
+     *
+     * @return array<string, mixed>
+     */
     private function quotedColumns(array $row): array
     {
         $out = [];

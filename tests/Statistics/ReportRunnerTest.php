@@ -9,9 +9,10 @@ use ElevateDxp\Statistics\Report\ReportRunner;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
-/** Ported from OpenPimcore\Tests\StatisticsBundle\ReportRunnerTest. */
+/** Report execution and the read-only SQL guard. */
 final class ReportRunnerTest extends TestCase
 {
+    /** @param list<array<string, mixed>> $rows */
     private function runner(string $sql, array $rows = [['a' => 1, 'b' => 2]], int $maxRows = 1000): ReportRunner
     {
         $conn = $this->createStub(Connection::class);

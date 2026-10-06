@@ -127,6 +127,11 @@ final class ShareLinkResource extends AbstractAdminResource
         return parent::runAction($action, $id, $params);
     }
 
+    /**
+     * @param array<string, mixed> $r collection row from the repository
+     *
+     * @return array<string, mixed>
+     */
     private function row(array $r): array
     {
         $active = isset($r['share_active']) ? (bool) $r['share_active'] : (!empty($r['share_expires_at']) && strtotime((string) $r['share_expires_at']) > time());

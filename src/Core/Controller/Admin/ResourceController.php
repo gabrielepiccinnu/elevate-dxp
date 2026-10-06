@@ -129,7 +129,7 @@ final class ResourceController extends AdminAbstractController
     }
 
     /**
-     * @param callable(AdminResourceInterface): array $fn
+     * @param callable(AdminResourceInterface): array<string, mixed> $fn
      */
     private function guard(string $key, callable $fn): JsonResponse
     {
@@ -155,6 +155,7 @@ final class ResourceController extends AdminAbstractController
         return $user instanceof User ? $user : null;
     }
 
+    /** @return array<string, mixed> */
     private function body(Request $request): array
     {
         $content = $request->getContent();
@@ -165,6 +166,7 @@ final class ResourceController extends AdminAbstractController
         return $request->request->all();
     }
 
+    /** @return array<array-key, mixed> */
     private function decodeArray(mixed $value): array
     {
         if (\is_array($value)) {
@@ -179,6 +181,7 @@ final class ResourceController extends AdminAbstractController
         return [];
     }
 
+    /** @param array<string, mixed> $context */
     private function log(AdminResourceInterface $r, string $what, array $context): void
     {
         $this->audit->log(new AuditEvent($r->getKey().'.'.$what, $this->user()?->getName() ?? 'anonymous', 'ok', $context));

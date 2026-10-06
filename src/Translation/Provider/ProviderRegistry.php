@@ -16,7 +16,7 @@ final class ProviderRegistry
     ) {
     }
 
-    /** Legacy behaviour: unknown or empty name falls back to pseudo, never fails. */
+    /** Lenient lookup: an empty name selects the default provider, an unknown one falls back to pseudo; never fails. */
     public function get(?string $name = null): TranslationProviderInterface
     {
         $name = $name === null || $name === '' ? $this->defaultProvider : $name;

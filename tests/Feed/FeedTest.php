@@ -9,9 +9,10 @@ use ElevateDxp\Feed\Template\GoogleMerchantTemplate;
 use ElevateDxp\Feed\Validator\FeedValidator;
 use PHPUnit\Framework\TestCase;
 
-/** Ported from the legacy OpenPimcore\Tests\FeedBundle\FeedTest, plus extra cases. */
+/** Feed templates and the feed validator. */
 final class FeedTest extends TestCase
 {
+    /** @return array<string, string> */
     private function row(): array
     {
         return [

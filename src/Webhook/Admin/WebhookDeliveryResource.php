@@ -113,6 +113,10 @@ final class WebhookDeliveryResource extends AbstractDbalResource
     /**
      * Moves "key:value" tokens (and the bare words "failed"/"delivered") from the free-text search
      * into structured filters. Pure, so it is unit-tested.
+     *
+     * @param array<string, mixed> $query
+     *
+     * @return array<string, mixed>
      */
     public static function extractTokenFilters(array $query): array
     {

@@ -51,8 +51,8 @@ final class DataObjectProvider implements ResourceProviderInterface
             return null;
         }
         $object = $fqcn::getById($id);
-        // Only objects of the configured class are reachable through an endpoint (the legacy bundle
-        // fell back to any object id, which could leak objects of other classes).
+        // Only published objects of the configured class are reachable through an endpoint, so an
+        // arbitrary id can never leak an object of another class.
         if (!$object instanceof $fqcn || !$object instanceof Concrete || !$object->isPublished()) {
             return null;
         }

@@ -6,6 +6,9 @@ namespace ElevateDxp\Core\Dto;
 
 final class AuditEvent
 {
+    /**
+     * @param array<string, mixed> $context
+     */
     public function __construct(
         public readonly string $action,
         public readonly string $actor,

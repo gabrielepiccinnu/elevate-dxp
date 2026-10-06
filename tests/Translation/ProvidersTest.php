@@ -14,6 +14,12 @@ use Symfony\Contracts\HttpClient\ResponseInterface;
 
 final class ProvidersTest extends TestCase
 {
+    /**
+     * @param array<string, mixed>|\Throwable $response decoded JSON body, or the transport error to throw
+     * @param array<string, mixed>|null       $captured receives the method, URL and options of the request
+     *
+     * @param-out array<string, mixed>|null $captured
+     */
     private function libre(array|\Throwable $response, ?array &$captured = null): LibreTranslateProvider
     {
         $client = $this->createStub(HttpClientInterface::class);

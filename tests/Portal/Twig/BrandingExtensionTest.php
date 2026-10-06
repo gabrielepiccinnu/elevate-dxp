@@ -9,11 +9,11 @@ use PHPUnit\Framework\TestCase;
 
 final class BrandingExtensionTest extends TestCase
 {
-    public function testExposesBrandingUnderBothFunctionNames(): void
+    public function testExposesBrandingFunction(): void
     {
         $ext = new BrandingExtension(['portal_name' => 'Acme', 'primary_color' => '#ff0000']);
         $names = array_map(static fn ($f) => $f->getName(), $ext->getFunctions());
-        self::assertSame(['edxp_branding', 'op_branding'], $names);
+        self::assertSame(['edxp_branding'], $names);
         self::assertSame('Acme', $ext->branding()['portal_name']);
         self::assertSame('#ff0000', $ext->branding()['primary_color']);
     }

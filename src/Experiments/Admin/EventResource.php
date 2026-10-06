@@ -41,11 +41,13 @@ final class EventResource extends AbstractDbalResource
         return 'edxp_event';
     }
 
+    /** @return list<string> */
     protected function getSearchColumns(): array
     {
         return ['event_name', 'visitor_id', 'experiment_key', 'url'];
     }
 
+    /** @return array<string, mixed> */
     public function getSchema(): array
     {
         return [

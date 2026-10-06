@@ -6,7 +6,11 @@ namespace ElevateDxp\Portal\Repository;
 
 use Doctrine\DBAL\Connection;
 
-/** Per-user saved searches/views for the portal (query + type + filters), owner-scoped. */
+/**
+ * Per-user saved searches/views for the portal (query + type + filters), owner-scoped.
+ *
+ * @phpstan-type SavedView array{id: int, owner: string, name: string, params: array<string, mixed>, created_at: string}
+ */
 class SavedViewRepository
 {
     private const SORTABLE = ['id', 'name', 'owner', 'created_at'];
@@ -35,13 +39,7 @@ class SavedViewRepository
         );
     }
 
-    /** @return list<array{id:int,name:string,params:array<string,mixed>}> */
-    public function allForOwner(string $owner): array
-    {
-        return array_map(static fn (array $r): array => ['id' => $r['id'], 'name' => $r['name'], 'params' => $r['params']], $this->search($owner, '', 0, 0)['rows']);
-    }
-
-    /** @return array{rows:list<array<string,mixed>>,total:int} */
+    /** @return array{rows: list<SavedView>, total: int} */
     public function search(?string $owner, string $q, int $start, int $limit, string $sort = 'id', string $dir = 'DESC'): array
     {
         $where = [];
@@ -65,7 +63,7 @@ class SavedViewRepository
         return ['rows' => array_map(self::hydrate(...), $this->db->fetchAllAssociative($sql, $params)), 'total' => $total];
     }
 
-    /** @return array<string,mixed>|null */
+    /** @return SavedView|null */
     public function find(int $id, ?string $owner): ?array
     {
         $row = $owner !== null
@@ -83,7 +81,11 @@ class SavedViewRepository
         );
     }
 
-    /** @return array<string,mixed> */
+    /**
+     * @param array<string, mixed> $r raw database row
+     *
+     * @return SavedView
+     */
     private static function hydrate(array $r): array
     {
         $params = json_decode((string) ($r['params_json'] ?? ''), true);

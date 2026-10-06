@@ -27,6 +27,9 @@ final class TrackController
 {
     private RateLimiterFactory $limiter;
 
+    /**
+     * @param array{enabled: bool, allowed_events?: list<string>, max_payload_bytes: int, rate_limit_per_minute: int} $config
+     */
     public function __construct(
         private readonly EventRecorder $recorder,
         private readonly VisitorIdResolver $visitorIdResolver,

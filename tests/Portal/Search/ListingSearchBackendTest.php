@@ -12,9 +12,11 @@ use PHPUnit\Framework\TestCase;
 
 final class ListingSearchBackendTest extends TestCase
 {
+    /** @param list<string> $objectFields */
     private function factory(?Asset\Listing $assets = null, array $objectFields = ['name', 'sku', 'price']): ListingFactory
     {
         return new class($assets, $objectFields) extends ListingFactory {
+            /** @param list<string> $fields */
             public function __construct(private readonly ?Asset\Listing $assetListing, private readonly array $fields)
             {
             }

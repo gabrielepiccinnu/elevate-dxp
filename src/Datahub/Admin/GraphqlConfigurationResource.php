@@ -105,7 +105,11 @@ final class GraphqlConfigurationResource extends AbstractAdminResource
         return $rows;
     }
 
-    /** Maps an OpenDxp\Bundle\DataHubBundle\Configuration (duck-typed) to a grid row. */
+    /**
+     * Maps an OpenDxp\Bundle\DataHubBundle\Configuration (duck-typed) to a grid row.
+     *
+     * @return array{name: string, type: string, group: string, active: bool, apiKeyConfigured: bool, endpoint: string, description: string}
+     */
     public static function toRow(object $config): array
     {
         $name = method_exists($config, 'getName') ? (string) $config->getName() : '';

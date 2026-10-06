@@ -48,11 +48,13 @@ final class VisitorProfileResource extends AbstractDbalResource
         return 'edxp_visitor_profile';
     }
 
+    /** @return list<string> */
     protected function getSearchColumns(): array
     {
         return ['visitor_id', 'last_url', 'utm_last', 'target_groups'];
     }
 
+    /** @return array{0: string, 1: 'ASC'|'DESC'} */
     protected function getDefaultSort(): array
     {
         return ['last_seen', 'DESC'];
@@ -66,6 +68,7 @@ final class VisitorProfileResource extends AbstractDbalResource
         return $result;
     }
 
+    /** @return array<string, mixed> */
     public function getSchema(): array
     {
         return [
@@ -96,6 +99,11 @@ final class VisitorProfileResource extends AbstractDbalResource
         ];
     }
 
+    /**
+     * @param array<string, mixed> $params
+     *
+     * @return array<string, mixed>
+     */
     public function runAction(string $action, ?string $id, array $params): array
     {
         return match ($action) {

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ElevateDxp\Statistics\Report;
 
 /**
- * Read-only SQL guard (ported from the legacy ReportRunner).
+ * Read-only SQL guard for configured report queries.
  *
  * Only a single SELECT/WITH statement is allowed; statement stacking and any data-modifying
  * or file-writing keyword is rejected before execution. False positives (e.g. a string literal
@@ -15,7 +15,7 @@ final class ReadOnlySqlGuard
 {
     public const FORBIDDEN = ['insert', 'update', 'delete', 'drop', 'alter', 'truncate', 'create',
         'grant', 'revoke', 'replace', 'merge', 'call', 'into', 'load', 'lock', 'rename', 'set',
-        // Elevate DXP additions: file access and dynamic SQL.
+        // file access and dynamic SQL
         'outfile', 'dumpfile', 'handler', 'prepare', 'execute', 'deallocate'];
 
     /**

@@ -7,8 +7,8 @@ namespace ElevateDxp\Portal\Search;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 
 /**
- * Portal search facade: picks the configured {@see SearchBackendInterface} and keeps the legacy
- * convenience API (searchAssets / searchDataObjects) with the same result shape
+ * Portal search facade: picks the configured {@see SearchBackendInterface} and offers the
+ * convenience methods searchAssets() / searchDataObjects(), which return the plain array shape
  * {items,total,page,pageSize}.
  */
 final class PortalSearchService
@@ -34,7 +34,11 @@ final class PortalSearchService
         return $this->backendFor($query)->search($query);
     }
 
-    /** Builds a query from loose input (admin filters, saved views) with the configured bounds. */
+    /**
+     * Builds a query from loose input (admin filters, saved views) with the configured bounds.
+     *
+     * @param array<string, mixed> $params
+     */
     public function queryFromArray(array $params): SearchQuery
     {
         return SearchQuery::fromArray($params, $this->defaultPageSize, $this->maxPageSize, $this->defaultClass);

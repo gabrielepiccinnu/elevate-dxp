@@ -19,6 +19,9 @@ final class SetVariant implements ActionHandlerInterface
     {
     }
 
+    /**
+     * @param array<string, mixed> $action rule action config with "experiment" and "variant" keys
+     */
     public function apply(VisitorInfo $visitorInfo, array $action, ?Rule $rule = null): void
     {
         $experiment = trim((string) ($action['experiment'] ?? ''));

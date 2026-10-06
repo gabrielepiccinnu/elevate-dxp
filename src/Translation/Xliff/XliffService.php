@@ -64,8 +64,8 @@ final class XliffService
             $source = $tu->getElementsByTagName('source')->item(0);
             $target = $tu->getElementsByTagName('target')->item(0);
             $out[$id] = [
-                'source' => $source?->textContent ?? '',
-                'target' => $target?->textContent ?? '',
+                'source' => $source->textContent ?? '',
+                'target' => $target->textContent ?? '',
             ];
         }
 
@@ -113,7 +113,7 @@ final class XliffService
                 continue;
             }
             [$from, $to] = $this->fileLanguages($tu);
-            $translated = $translate($source?->textContent ?? '', $from, $to);
+            $translated = $translate($source->textContent ?? '', $from, $to);
             if ($existing instanceof \DOMElement) {
                 $existing->textContent = $translated;
             } else {

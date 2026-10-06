@@ -8,7 +8,7 @@ use OpenDxp\Bundle\CustomReportsBundle\Tool\Config;
 use OpenDxp\Model\User;
 
 /**
- * Read access to native OpenDXP Custom Reports (the legacy Studio API was backed by these).
+ * Read access to native OpenDXP Custom Reports.
  * Uses the native adapter, so native permissions/sharing apply when a user is given.
  */
 final class NativeReportReader

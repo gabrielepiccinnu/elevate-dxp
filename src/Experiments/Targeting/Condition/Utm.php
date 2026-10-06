@@ -23,6 +23,7 @@ final class Utm extends AbstractVariableCondition implements DataProviderDepende
     ) {
     }
 
+    /** @param array<string, mixed> $config */
     public static function fromConfig(array $config): self
     {
         $param = (string) ($config['parameter'] ?? 'utm_campaign');
@@ -33,6 +34,7 @@ final class Utm extends AbstractVariableCondition implements DataProviderDepende
         return new self($param, StringMatcher::mode($config), isset($config['value']) ? (string) $config['value'] : null, ($config['touch'] ?? 'last') === 'first' ? 'first' : 'last');
     }
 
+    /** @return list<string> */
     public function getDataProviderKeys(): array
     {
         return [VisitorProfileDataProvider::PROVIDER_KEY];

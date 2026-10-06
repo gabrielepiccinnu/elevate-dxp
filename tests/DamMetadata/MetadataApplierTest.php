@@ -42,7 +42,7 @@ final class MetadataApplierTest extends TestCase
         self::assertSame("Unknown schema 'x'.", $applier->applyToFolder('/', 'x', 'f', '1')['error']);
         self::assertStringContainsString('numeric', (string) $applier->applyToFolder('/', 's', 'f', 'abc')['error']);
         self::assertStringContainsString('Invalid folder', (string) $applier->applyToFolder('/a/../b', 's', 'f', '1')['error']);
-        self::assertSame("Unknown field 'g' in schema 's'.", $applier->apply('s', 'g', '1')['error'], 'legacy apply() entry point');
+        self::assertSame("Unknown field 'g' in schema 's'.", $applier->apply('s', 'g', '1')['error'], 'schema-wide apply() entry point');
     }
 
     public function testSummary(): void

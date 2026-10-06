@@ -1,101 +1,100 @@
-# Elevate DXP SSO Bundle
+# SSO
 
-`elevate-dxp/sso-bundle` (`ElevateDxp\Sso`), GPL-3.0-or-later.
+The security-critical core of single sign-on for the OpenDXP admin: deny-by-default mapping of IdP groups to OpenDXP roles, native user provisioning, and one login decision service. The module does not ship the OIDC authorization-code flow itself; see [Hooking an OIDC login flow into the admin](#hooking-an-oidc-login-flow-into-the-admin).
 
-This bundle is the security-critical, reusable core of single sign-on for OpenDXP:
+Config key: `elevate_dxp.sso` · Permission: `elevate_dxp_sso` · Admin menu: Elevate DXP → Security
 
-- **Deny-by-default claim → role mapping** (`RoleMappingIdentityMapper`): only IdP groups listed in `role_mapping` grant anything.
-- **Identity descriptor** (`IdentityDescriptor`): an identifier, an email and roles. With no identifier or no roles, the identity is unauthorised.
-- **Native user provisioning** (`OpenDxpUserProvisioner`): it upserts an `OpenDxp\Model\User` and syncs its admin flag and roles. Roles are matched by name against `OpenDxp\Model\User\Role`. Unknown roles are ignored and never created.
-- **Login decision service** (`SsoLoginService`): validated claims go in; the result is an OpenDXP user or a denial with a reason.
+See also: [Configuration](../configuration.md), [Architecture](../architecture.md), [Security and privacy](../security-and-privacy.md).
 
-The bundle does not ship the OIDC authorization-code flow itself. See [Hooking a login flow](#hooking-an-oidc-login-flow-into-the-admin).
+## Components
 
-It is a port of the legacy `OpenPimcore\SsoBundle`.
+| Class | Role |
+|---|---|
+| `ElevateDxp\Sso\Identity\RoleMappingIdentityMapper` | Maps claims to an `IdentityDescriptor`. Only groups listed in `role_mapping` grant a role; matching is exact and case-sensitive. |
+| `ElevateDxp\Sso\Identity\IdentityDescriptor` | Identifier, email, mapped roles. `isAuthorized()` requires a non-empty identifier and at least one role. |
+| `ElevateDxp\Sso\Provisioning\RolePlan` | Splits mapped roles into the admin flag (`admin` or `ROLE_OPENDXP_ADMIN`, case-insensitive) and role names. |
+| `ElevateDxp\Sso\Provisioning\OpenDxpUserProvisioner` | Upserts an `OpenDxp\Model\User` (name = identifier), sets the email, activates it, and replaces its admin flag and roles. Role names are resolved with `OpenDxp\Model\User\Role::getByName()`; unknown roles are ignored, never created. |
+| `ElevateDxp\Sso\Provisioning\UserDirectory` | User and role lookups by name. |
+| `ElevateDxp\Sso\Login\SsoLoginService` | `decide(array $claims): SsoDecision` and `login(array $claims): User` (throws `SsoDeniedException`). Public service, so an app authenticator can use it. |
 
-## Installation
-
-```bash
-bin/console opendxp:bundle:install ElevateDxpSsoBundle   # registers permission elevate_dxp_sso
-```
-
-## Configuration (`elevate_dxp_sso`)
+## Configuration
 
 ```yaml
-elevate_dxp_sso:
-    enabled: false              # deny every SSO login until explicitly enabled
-    groups_claim: groups
-    identifier_claim: sub       # OpenDXP user name; falls back to sub, then email
-    jit_provisioning: false     # true = create unknown users on first login
-    providers:
-        keycloak:
-            type: oidc
-            issuer: 'https://idp.example.com/realms/dxp'
-            client_id: 'opendxp'
-            client_secret: '%env(SSO_CLIENT_SECRET)%'
-            scopes: [openid, email, profile, groups]
-            role_mapping:
-                dxp-admins: admin          # "admin" / ROLE_OPENDXP_ADMIN = admin flag
-                dxp-editors: Editor        # an existing OpenDXP role name
+elevate_dxp:
+    sso:
+        enabled: false              # default: every SSO login is denied
+        groups_claim: groups        # claim holding the IdP groups (string or list)
+        identifier_claim: sub       # OpenDXP user name; falls back to "sub", then "email"
+        jit_provisioning: false     # true = create unknown users on first login
+        providers:
+            keycloak:
+                type: oidc          # only "oidc" is accepted
+                issuer: 'https://idp.example.com/realms/dxp'
+                client_id: 'opendxp'
+                client_secret: '%env(SSO_CLIENT_SECRET)%'
+                scopes: [openid, email, profile, groups]   # default
+                role_mapping:
+                    dxp_admins: admin      # "admin" / "ROLE_OPENDXP_ADMIN" sets the admin flag
+                    dxp_editors: Editor    # an existing OpenDXP role name
 ```
 
-The `role_mapping` of all providers is merged into the lookup table used at login. If two providers map the same group, the later provider wins. Group matching is exact and case-sensitive.
+`providers` defaults to empty, so nothing is mapped until you configure it. `issuer`, `client_id`, `client_secret` and `scopes` are not used by the module itself (it has no OIDC client); they are shown in the admin resource and available to your integration through the `elevate_dxp_sso.providers` container parameter.
 
-### Decision rules (`SsoLoginService::decide()`)
+The `role_mapping` of all providers is merged into the single lookup table used at login; when two providers map the same group, the later one wins.
 
-The rules are checked in order. The first that applies decides.
+Caveat: Symfony config key normalisation rewrites a `role_mapping` key that contains `-` but no `_` (for example `dxp-admins` becomes `dxp_admins`), so such groups never match the claim. Use group names without hyphens, or include an underscore, until the node disables key normalisation.
 
-1. SSO is disabled → **deny**.
-2. There is no identifier, or no group maps to a role → **deny** (deny-by-default).
-3. The user is unknown and `jit_provisioning` is false → **deny**.
-4. The user exists but an administrator deactivated it → **deny**. SSO never re-activates an account.
-5. Otherwise → **allow**. `login()` upserts the user and syncs the admin flag and roles on every login, so an IdP group change propagates.
+## Decision rules
+
+`SsoLoginService::decide()` checks in order; the first match decides:
+
+1. SSO disabled → deny.
+2. No identifier → deny.
+3. No group maps to a role → deny.
+4. User unknown and `jit_provisioning` false → deny.
+5. User exists but is deactivated → deny (SSO never re-activates an account).
+6. Otherwise → allow. `login()` provisions the user and syncs the admin flag and roles on every login, so IdP group changes propagate.
+
+A group mapped only to a role name that does not exist in OpenDXP still counts as mapped: the login is allowed, but the user gets no roles from it.
 
 ## Admin resource `sso_mapping`
 
-The resource is in the **Security** group and requires `elevate_dxp_sso`.
+Read-only ("SSO mapping"); the configuration is the source of truth. One row per `provider / IdP group → OpenDXP role`, with its effect: sets the admin flag, assigns role #id, or "does not exist in OpenDXP — mapping is ignored".
 
-It is read-only (the config is the source of truth). Each row is a `provider / IdP group → OpenDXP role` mapping, with its effect:
+Actions (global):
 
-- "Sets the admin flag";
-- "Assigns role #id";
-- "Role does not exist — mapping is ignored".
-
-Actions:
-
-- **Simulate mapping** (global). Params: claims (JSON) and provider. The provider can be one provider's mapping, or all providers merged, which is what login uses. It shows:
-  - the identifier and email;
-  - the groups, including unmapped groups;
-  - the admin flag and roles, flagging roles that are missing in OpenDXP;
-  - whether a user exists;
-  - the final **ALLOW/DENY** decision and its reason.
-
-  Simulation changes nothing.
-- **Show settings** (global): the effective settings. Client secrets are always masked.
+- **Simulate mapping.** Params: claims (JSON object) and the mapping to use (one provider, or all providers merged, as at login). Shows identifier, email, groups, unmapped groups, admin flag, roles (flagging missing ones), whether the user exists and is active, and the ALLOW/DENY decision with its reason. It applies `jit_provisioning` but not `enabled` (a note is added when SSO is disabled). Nothing is changed.
+- **Show settings.** The effective settings; client secrets are masked.
 
 ## Hooking an OIDC login flow into the admin
 
-The admin firewall is built from the parameter `opendxp_admin_bundle.firewall_settings`. That parameter comes from the `opendxp_admin.security_firewall` variable node, whose defaults are in `vendor/open-dxp/admin-bundle/config/opendxp/default.yaml`. It already uses `custom_authenticators`, and you add your OIDC authenticator there.
+The admin firewall is built from the container parameter `opendxp_admin_bundle.firewall_settings`, set from the `opendxp_admin.security_firewall` variable node. Its defaults are in `vendor/open-dxp/admin-bundle/config/opendxp/default.yaml` and already include `custom_authenticators`.
 
-1. **Pick an OIDC client library.** Examples: `knpuniversity/oauth2-client-bundle` with a generic or Keycloak provider, `jumbojett/openid-connect-php`, or `web-token/jwt-library` for your own validation. The library must validate the ID token: signature (JWKS), `iss`, `aud`, `exp` and the `nonce`/`state` you issued.
+1. **Choose an OIDC client library** that validates the ID token: signature (JWKS), `iss`, `aud`, `exp`, and the `state`/`nonce` you issued.
 
-2. **Add two routes inside the admin firewall** and make them public:
+2. **Add two routes under `/admin` and make them public:**
 
    ```yaml
    # config/routes.yaml
    app_sso_start:    { path: /admin/login/sso/start,    controller: App\Controller\SsoController::start }
    app_sso_callback: { path: /admin/login/sso/callback, controller: App\Controller\SsoController::callback }
    ```
+
    ```yaml
-   # config/packages/security.yaml, access_control, BEFORE "^/admin"
+   # config/packages/security.yaml, access_control, before "^/admin"
    - { path: ^/admin/login/sso/, roles: PUBLIC_ACCESS }
    ```
 
-   `start` stores `state` and `nonce` in the session and redirects to the IdP. `callback` is never executed when authentication succeeds, because the authenticator below handles the request first.
+   `start` stores `state` and `nonce` in the session and redirects to the IdP. The callback request is handled by the authenticator below.
 
-3. **Write the authenticator.** It delegates every authorisation decision to `SsoLoginService`:
+3. **Write the authenticator**, delegating every authorisation decision to `SsoLoginService`:
 
    ```php
+   use ElevateDxp\Sso\Login\SsoDeniedException;
+   use ElevateDxp\Sso\Login\SsoLoginService;
+   use OpenDxp\Security\User\User as SecurityUser;
+   // + Symfony Security / HttpFoundation / Routing imports
+
    final class OidcAdminAuthenticator extends AbstractAuthenticator
    {
        public function __construct(private SsoLoginService $sso, private YourOidcClient $oidc, private RouterInterface $router) {}
@@ -107,60 +106,43 @@ The admin firewall is built from the parameter `opendxp_admin_bundle.firewall_se
 
        public function authenticate(Request $request): Passport
        {
-           $claims = $this->oidc->exchangeAndValidate($request); // code → tokens, verify signature/iss/aud/exp/nonce/state
+           $claims = $this->oidc->exchangeAndValidate($request); // code -> tokens; verify signature/iss/aud/exp/nonce/state
            try {
                $user = $this->sso->login($claims);              // deny-by-default mapping + provisioning
-           } catch (SsoDeniedException $e) {
+           } catch (SsoDeniedException) {
                throw new CustomUserMessageAuthenticationException('SSO login denied.');
            }
 
-           return new SelfValidatingPassport(new UserBadge($user->getName(), fn () => new \OpenDxp\Security\User\User($user)));
+           return new SelfValidatingPassport(new UserBadge($user->getName(), fn () => new SecurityUser($user)));
        }
 
-       public function onAuthenticationSuccess(Request $r, TokenInterface $t, string $fw): ?Response
+       public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
        {
            return new RedirectResponse($this->router->generate('opendxp_admin_index'));
        }
 
-       public function onAuthenticationFailure(Request $r, AuthenticationException $e): ?Response
+       public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response
        {
-           return new RedirectResponse($this->router->generate('opendxp_admin_login', ['auth_failed' => 'true']));
+           return new RedirectResponse($this->router->generate('opendxp_admin_login'));
        }
    }
    ```
 
-4. **Register the authenticator on the admin firewall.** `security_firewall` is a variable node, so you must repeat the full default block, then append your class:
+4. **Register it on the admin firewall.** `security_firewall` is a variable node, so overriding it replaces the whole default block: copy every key from `default.yaml` and append your authenticator.
 
    ```yaml
    # config/config.yaml
    opendxp_admin:
        security_firewall:
-           # ... copy pattern, user_checker, provider, login_throttling, logout, form_login, two_factor
-           #     from vendor/open-dxp/admin-bundle/config/opendxp/default.yaml ...
+           # copy pattern, user_checker, provider, login_throttling, logout, form_login, two_factor
+           # from vendor/open-dxp/admin-bundle/config/opendxp/default.yaml
            custom_authenticators:
                - OpenDxp\Bundle\AdminBundle\Security\Authenticator\AdminTokenAuthenticator
                - App\Security\OidcAdminAuthenticator
    ```
 
-5. **Add a login button (optional).** Listen to `OpenDxp\Bundle\AdminBundle\Event\AdminEvents::LOGIN_BEFORE_RENDER` and add `$parameters['includeTemplates']['App'] = 'admin/sso_button.html.twig'`. The template is a link to `path('app_sso_start')`.
+5. **Add a login button (optional).** Listen to `OpenDxp\Bundle\AdminBundle\Event\AdminEvents::LOGIN_BEFORE_RENDER` (a `GenericEvent`): read `$event->getArgument('parameters')`, add `$parameters['includeTemplates']['App'] = 'admin/sso_button.html.twig'`, and set the argument back. The template links to `path('app_sso_start')`.
 
-6. **Hide the password form (optional).** Admin form login stays available. To reduce exposure, combine SSO with the *custom admin login entry point* described in `vendor/open-dxp/admin-bundle/docs/10_Extension_Points/07_Custom_Admin_Login.md`. With `opendxp_admin.custom_admin_path_identifier` set, `/admin` only accepts browsers that first visited your secret entry route. Give that route only to break-glass administrators. Everybody else signs in through `app_sso_start`, which must be reachable without the admin cookie, so add it to the custom entry point flow or exclude it accordingly.
+6. **Reduce password-login exposure (optional).** Form login stays available. OpenDXP supports a custom admin entry point (`opendxp_admin.custom_admin_path_identifier`, at least 20 characters), documented in `vendor/open-dxp/admin-bundle/docs/10_Extension_Points/07_Custom_Admin_Login.md`: `/admin` then requires a cookie set by your secret entry route. Give that route only to break-glass administrators, and make sure `app_sso_start` and the callback remain usable for everyone else in that setup.
 
-Two factor: OpenDXP 2FA still applies to users who enabled it. If your IdP enforces MFA, tell users not to enrol OpenDXP 2FA as well, or disable 2FA for SSO accounts.
-
-## Porting notes
-
-- The Pimcore roles are replaced by OpenDXP roles. The admin aliases are `admin` and `ROLE_OPENDXP_ADMIN`. `ROLE_PIMCORE_ADMIN` is still accepted.
-- `PimcoreUserProvisioner` is renamed `OpenDxpUserProvisioner`. User and role lookups go through `UserDirectory`.
-- New pieces:
-  - `identifier_claim`;
-  - `SsoLoginService`, which owns the decision rules (disabled, JIT, deactivated users) that were previously left to the integrator;
-  - `RolePlan`;
-  - `IdentityDescriptor::isAuthorized()` now also requires an identifier.
-- The live authorization-code flow is still out of scope, as in the legacy MVP. It is documented above.
-
-## Tests
-
-```bash
-docker compose exec -T php vendor/bin/phpunit -c /var/www/packages/phpunit.xml.dist --filter SsoBundle
-```
+Two-factor authentication: OpenDXP 2FA still applies to users who enrolled it. If the IdP already enforces MFA, avoid enrolling OpenDXP 2FA for SSO accounts.

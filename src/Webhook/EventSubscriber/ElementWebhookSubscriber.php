@@ -136,7 +136,7 @@ final class ElementWebhookSubscriber implements EventSubscriberInterface
     private function fire(string $event, ElementEventInterface $e, callable $payload): void
     {
         try {
-            if (method_exists($e, 'hasArgument') && $e->hasArgument('isAutoSave') && $e->getArgument('isAutoSave') === true) {
+            if ($e->hasArgument('isAutoSave') && $e->getArgument('isAutoSave') === true) {
                 return;
             }
             $this->dispatcher->dispatch($event, $payload());

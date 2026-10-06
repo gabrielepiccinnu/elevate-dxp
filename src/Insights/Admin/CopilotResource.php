@@ -66,6 +66,7 @@ final class CopilotResource extends AbstractAdminResource
         return InsightsInstaller::COPILOT;
     }
 
+    /** @return array<string, mixed> */
     public function getSchema(): array
     {
         return [
@@ -96,11 +97,17 @@ final class CopilotResource extends AbstractAdminResource
         return $this->paginate($rows, $query, ['key', 'label']);
     }
 
+    /** @return array<string, mixed>|null */
     public function get(string $id): ?array
     {
         return isset(self::PRESETS[$id]) ? ['key' => $id] + self::PRESETS[$id] : null;
     }
 
+    /**
+     * @param array<string, mixed> $params
+     *
+     * @return array<string, mixed>
+     */
     public function runAction(string $action, ?string $id, array $params): array
     {
         if ($action === 'status') {
@@ -127,6 +134,7 @@ final class CopilotResource extends AbstractAdminResource
         return Action::text($answer, self::PRESETS[$id]['label'].($element !== '' ? ' — '.$element : ''));
     }
 
+    /** @return list<array<string, mixed>> */
     private static function params(): array
     {
         return [

@@ -60,7 +60,11 @@ final class WebhookDeliveryRepository implements DeliveryRecorderInterface
         return $row === false ? null : $row;
     }
 
-    /** @return array<string,mixed> decoded payload of a stored delivery */
+    /**
+     * @param array<string, mixed> $row stored delivery row
+     *
+     * @return array<string,mixed> decoded payload of a stored delivery
+     */
     public static function payloadOf(array $row): array
     {
         $payload = json_decode((string) ($row['payload_json'] ?? '[]'), true);

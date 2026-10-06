@@ -25,6 +25,7 @@ final class TimeWindow implements ConditionInterface
     ) {
     }
 
+    /** @param array<string, mixed> $config */
     public static function fromConfig(array $config): self
     {
         $days = $config['days'] ?? [];

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace ElevateDxp\Insights\DataQuality;
 
 /**
- * Computes data-quality (completeness) scores for Pimcore DataObjects: per-field fill rate,
+ * Computes data-quality (completeness) scores for OpenDXP DataObjects: per-field fill rate,
  * average completeness, and the worst-offending records. The pure scoring logic (scoreRows)
- * is separated from Pimcore fetching so it is smoke-testable without a database.
+ * is separated from DataObject fetching so it can be unit-tested without a database.
  */
 final class QualityService
 {
@@ -72,7 +72,7 @@ final class QualityService
     }
 
     /**
-     * Builds the report for a configured class by reading objects from Pimcore.
+     * Builds the report for a configured class by reading its DataObjects.
      *
      * @return array<string,mixed>
      *

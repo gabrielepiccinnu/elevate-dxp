@@ -47,10 +47,4 @@ final class PortalInstaller extends ModuleInstaller
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci',
         ];
     }
-
-    /** Public so the CLI can (re)create tables without a full bundle install. */
-    public function getSchemaStatements(): array
-    {
-        return $this->getSchema();
-    }
 }
