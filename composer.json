@@ -1,0 +1,52 @@
+{
+    "name": "elevate-dxp/elevate-bundle",
+    "description": "A/B testing, conversion tracking, visitor insights, product feeds, datahub, webhooks, asset portal and workflow designer for OpenDXP.",
+    "type": "opendxp-bundle",
+    "license": "GPL-3.0-or-later",
+    "keywords": ["opendxp", "dxp", "ab-testing", "personalization", "pim", "product-feed", "webhooks", "dam"],
+    "authors": [
+        { "name": "Gabriele Piccinnu", "homepage": "https://github.com/gabrielepiccinnu" }
+    ],
+    "require": {
+        "php": "~8.3.0 || ~8.4.0 || ~8.5.0",
+        "ext-dom": "*",
+        "doctrine/dbal": "^3.8 || ^4.0",
+        "guzzlehttp/guzzle": "^7.8",
+        "maennchen/zipstream-php": "^3.1",
+        "open-dxp/admin-bundle": "^1.4",
+        "open-dxp/opendxp": "^1.4",
+        "open-dxp/personalization-bundle": "^1.0",
+        "symfony/http-client": "^7.4",
+        "symfony/messenger": "^7.4",
+        "symfony/rate-limiter": "^7.4",
+        "symfony/yaml": "^7.4",
+        "twig/twig": "^3.0"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.64",
+        "phpstan/phpstan": "^2.1",
+        "phpunit/phpunit": "^11.5 || ^12.0"
+    },
+    "suggest": {
+        "open-dxp/data-hub-bundle": "Lists GraphQL Data Hub configurations next to the REST endpoints"
+    },
+    "autoload": {
+        "psr-4": { "ElevateDxp\\": "src/" }
+    },
+    "autoload-dev": {
+        "psr-4": { "ElevateDxp\\Tests\\": "tests/" }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "extra": {
+        "branch-alias": { "dev-main": "1.0.x-dev" },
+        "opendxp": { "bundles": ["ElevateDxp\\ElevateDxpBundle"] }
+    },
+    "scripts": {
+        "test": "phpunit",
+        "stan": "phpstan analyse --memory-limit=1G",
+        "cs": "php-cs-fixer fix --dry-run --diff",
+        "cs-fix": "php-cs-fixer fix"
+    }
+}

@@ -1,0 +1,50 @@
+{% set brand = edxp_branding() %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="referrer" content="no-referrer">
+    <title>{{ brand.portal_name }} — Shared: {{ collection.name }}</title>
+    <style>
+        :root { --b:{{ brand.primary_color }}; --ink:{{ brand.accent_color }}; --muted:#6b7c85; --line:#e3e9ec; }
+        * { box-sizing:border-box; }
+        body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif; color:var(--ink); background:#f4f7f8; }
+        header { background:#fff; border-bottom:1px solid var(--line); }
+        .bar { max-width:1000px; margin:0 auto; padding:16px 20px; display:flex; align-items:center; gap:18px; }
+        .logo { font-weight:800; color:var(--b); }
+        .logo img { max-height:36px; display:block; }
+        main { max-width:1000px; margin:0 auto; padding:28px 20px 60px; }
+        h1 { font-size:24px; margin:0 0 4px; }
+        .sub { color:var(--muted); margin:0 0 22px; }
+        .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:16px; }
+        .card { background:#fff; border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+        .card img { width:100%; height:130px; object-fit:cover; background:#eef; display:block; }
+        .card .b { padding:10px 12px; font-size:13px; word-break:break-word; }
+        .btn { display:inline-block; background:var(--b); color:#fff; text-decoration:none; padding:10px 18px; border-radius:10px; font-weight:700; }
+        .pill { display:inline-block; background:#e6f4f4; color:var(--b); border-radius:999px; padding:3px 10px; font-size:12px; font-weight:600; }
+        footer { text-align:center; color:var(--muted); font-size:13px; padding:24px; }
+    </style>
+</head>
+<body>
+<header><div class="bar">
+    <span class="logo">{% if brand.logo_url %}<img src="{{ brand.logo_url }}" alt="{{ brand.portal_name }}">{% else %}{{ brand.portal_name }}{% endif %}</span>
+    <span class="pill" style="margin-left:auto">Shared collection · guest access</span>
+</div></header>
+<main>
+    <h1>{{ collection.name }}</h1>
+    <p class="sub">{{ items|length }} item(s) shared with you{% if collection.share_expires_at %} until {{ collection.share_expires_at }}{% endif %}. No login required.</p>
+    <p><a class="btn" rel="noreferrer" href="{{ path('elevate_dxp_portal_share_download', {token: token}) }}">Download all (ZIP)</a></p>
+    <div class="grid" style="margin-top:20px">
+        {% for it in items %}
+            <div class="card">
+                {% if it.thumb %}<img src="{{ it.thumb }}" alt="{{ it.label }}" loading="lazy">{% endif %}
+                <div class="b">{{ it.label }}</div>
+            </div>
+        {% endfor %}
+    </div>
+</main>
+<footer>{{ brand.footer_text }}</footer>
+</body>
+</html>

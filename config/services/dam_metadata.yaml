@@ -1,0 +1,19 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    ElevateDxp\DamMetadata\:
+        resource: '../../src/DamMetadata/*'
+        exclude:
+            - '../../src/DamMetadata/DependencyInjection/'
+
+
+    ElevateDxp\DamMetadata\Metadata\SchemaService:
+        arguments:
+            $schemas: '%elevate_dxp_dam_metadata.schemas%'
+
+    ElevateDxp\DamMetadata\Metadata\MetadataApplier:
+        arguments:
+            $batchSize: '%elevate_dxp_dam_metadata.batch_size%'

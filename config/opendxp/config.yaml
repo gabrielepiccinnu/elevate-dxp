@@ -1,0 +1,15 @@
+# Registers the Elevate DXP extensions in the official personalization bundle (auto-loaded by OpenDXP).
+opendxp_personalization:
+    targeting:
+        data_providers:
+            edxp_experiments: ElevateDxp\Experiments\Targeting\DataProvider\ExperimentsDataProvider
+            edxp_profile: ElevateDxp\Experiments\Targeting\DataProvider\VisitorProfileDataProvider
+        conditions:
+            edxp_experiment_variant: ElevateDxp\Experiments\Targeting\Condition\ExperimentVariant
+            edxp_query_param: ElevateDxp\Experiments\Targeting\Condition\QueryParam
+            edxp_utm: ElevateDxp\Experiments\Targeting\Condition\Utm
+            edxp_cookie: ElevateDxp\Experiments\Targeting\Condition\Cookie
+            edxp_time_window: ElevateDxp\Experiments\Targeting\Condition\TimeWindow
+            edxp_returning_visitor: ElevateDxp\Experiments\Targeting\Condition\ReturningVisitor
+        action_handlers:
+            edxp_set_variant: ElevateDxp\Experiments\Targeting\ActionHandler\SetVariant

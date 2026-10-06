@@ -1,0 +1,51 @@
+/* Elevate DXP admin styles. GPL-3.0-or-later. */
+.opendxp_main_nav_icon_elevatedxp {
+    background-color: var(--color-opendxp-white) !important;
+    background-image: none !important;
+    mask: url(/bundles/opendxpadmin/img/material-icons/outline-widgets-24px.svg) center/24px no-repeat !important;
+    -webkit-mask: url(/bundles/opendxpadmin/img/material-icons/outline-widgets-24px.svg) center/24px no-repeat !important;
+    mask-size: 24px 24px;
+    -webkit-mask-size: 24px 24px;
+}
+
+.opendxp_nav_icon_elevatedxp_group {
+    background: url(/bundles/opendxpadmin/img/flat-white-icons/folder.svg) center center no-repeat !important;
+}
+
+.elevatedxp-code textarea {
+    font-family: Menlo, Consolas, monospace !important;
+    font-size: 12px !important;
+}
+
+.elevatedxp-help {
+    color: #777;
+    font-size: 11px;
+    padding-top: 2px;
+}
+
+.elevatedxp_icon_experiment { background: url(/bundles/opendxpadmin/img/flat-color-icons/biotech.svg) center center no-repeat !important; }
+.elevatedxp_icon_report { background: url(/bundles/opendxpadmin/img/flat-color-icons/combo_chart.svg) center center no-repeat !important; }
+.elevatedxp_icon_profile { background: url(/bundles/opendxpadmin/img/flat-color-icons/business_contact.svg) center center no-repeat !important; }
+.elevatedxp_icon_webhook { background: url(/bundles/opendxpadmin/img/flat-color-icons/electrical_threshold.svg) center center no-repeat !important; }
+.elevatedxp_icon_export { background: url(/bundles/opendxpadmin/img/flat-color-icons/export.svg) center center no-repeat !important; }
+.elevatedxp_icon_feed { background: url(/bundles/opendxpadmin/img/flat-color-icons/shop.svg) center center no-repeat !important; }
+.elevatedxp_icon_statistics { background: url(/bundles/opendxpadmin/img/flat-color-icons/statistics.svg) center center no-repeat !important; }
+.elevatedxp_icon_dam { background: url(/bundles/opendxpadmin/img/flat-color-icons/data_sheet.svg) center center no-repeat !important; }
+.elevatedxp_icon_translation { background: url(/bundles/opendxpadmin/img/flat-color-icons/translation.svg) center center no-repeat !important; }
+.elevatedxp_icon_portal { background: url(/bundles/opendxpadmin/img/flat-color-icons/share.svg) center center no-repeat !important; }
+.elevatedxp_icon_datahub { background: url(/bundles/opendxpadmin/img/flat-color-icons/data_configuration.svg) center center no-repeat !important; }
+.elevatedxp_icon_workflow { background: url(/bundles/opendxpadmin/img/flat-color-icons/workflow.svg) center center no-repeat !important; }
+.elevatedxp_icon_automation { background: url(/bundles/opendxpadmin/img/flat-color-icons/automatic.svg) center center no-repeat !important; }
+.elevatedxp_icon_sso { background: url(/bundles/opendxpadmin/img/flat-color-icons/key.svg) center center no-repeat !important; }
+.elevatedxp_icon_quality { background: url(/bundles/opendxpadmin/img/flat-color-icons/approval.svg) center center no-repeat !important; }
+.elevatedxp_icon_copilot { background: url(/bundles/opendxpadmin/img/flat-color-icons/assistant.svg) center center no-repeat !important; }
+.elevatedxp_icon_audit { background: url(/bundles/opendxpadmin/img/flat-color-icons/survey.svg) center center no-repeat !important; }
+
+/* Generic action icons used by Elevate DXP resources (missing from the core icon set). */
+.opendxp_icon_play { background: url(/bundles/opendxpadmin/img/flat-color-icons/start.svg) center center no-repeat !important; }
+.opendxp_icon_pause { background: url(/bundles/opendxpadmin/img/flat-color-icons/cancel.svg) center center no-repeat !important; }
+.opendxp_icon_calculator { background: url(/bundles/opendxpadmin/img/flat-color-icons/calculator.svg) center center no-repeat !important; }
+.opendxp_icon_history { background: url(/bundles/opendxpadmin/img/flat-color-icons/timeline.svg) center center no-repeat !important; }
+.opendxp_icon_target_groups { background: url(/bundles/opendxpadmin/img/flat-color-icons/conference_call.svg) center center no-repeat !important; }
+
+.elevatedxp-has-help { margin-bottom: 22px !important; }

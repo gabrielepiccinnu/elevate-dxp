@@ -1,0 +1,45 @@
+# Routes of all Elevate DXP modules (auto-loaded by OpenDXP)
+
+# --- Core
+elevate_dxp_core_admin:
+    resource: '../../src/Core/Controller/Admin/'
+    type: attribute
+    prefix: /admin
+    options:
+        expose: true
+
+# --- Experiments
+elevate_dxp_experiments_public:
+    resource: '../../src/Experiments/Controller/'
+    type: attribute
+
+# --- Webhook
+# Public (non-admin) routes only. Admin features are served by the core ResourceController.
+elevate_dxp_webhook_sink:
+    resource: '../../src/Webhook/Controller/'
+    type: attribute
+
+# --- Feed
+# Public, tokenized feed URLs (outside /admin): /elevate-dxp/feed/{name}.{format}?token=...
+elevate_dxp_feed_routes:
+    resource: '../../src/Feed/Controller/'
+    type: attribute
+
+# --- Datahub
+# Public, API-key protected REST endpoints (outside /admin): /elevate-dxp/api/{endpoint}[/{id}]
+elevate_dxp_datahub_routes:
+    resource: '../../src/Datahub/Controller/'
+    type: attribute
+
+# --- Portal
+# PUBLIC guest-share routes (anonymous; the expiring token is the access control).
+elevate_dxp_portal_share:
+    resource: '../../src/Portal/Controller/Share/'
+    type: attribute
+
+# Admin ZIP downloads (binary streams cannot go through the core ResourceController).
+# Under /admin, so the admin firewall, session and permission checks apply.
+elevate_dxp_portal_admin:
+    resource: '../../src/Portal/Controller/Admin/'
+    type: attribute
+    prefix: /admin

@@ -1,0 +1,23 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    ElevateDxp\Insights\:
+        resource: '../../src/Insights/*'
+        exclude:
+            - '../../src/Insights/DependencyInjection/'
+            - '../../src/Insights/Cdp/SegmentEvaluator.php'
+
+
+    ElevateDxp\Insights\DataQuality\QualityService:
+        arguments:
+            $profiles: '%elevate_dxp_insights.data_quality.profiles%'
+            $sampleLimit: '%elevate_dxp_insights.data_quality.sample_limit%'
+
+    ElevateDxp\Insights\Copilot\ClaudeClient:
+        arguments:
+            $apiKey: '%elevate_dxp_insights.copilot.api_key%'
+            $model: '%elevate_dxp_insights.copilot.model%'
+            $maxTokens: '%elevate_dxp_insights.copilot.max_tokens%'

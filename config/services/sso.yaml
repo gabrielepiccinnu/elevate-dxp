@@ -1,0 +1,37 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    ElevateDxp\Sso\:
+        resource: '../../src/Sso/*'
+        exclude:
+            - '../../src/Sso/DependencyInjection/'
+            - '../../src/Sso/Identity/IdentityDescriptor.php'
+            - '../../src/Sso/Provisioning/RolePlan.php'
+            - '../../src/Sso/Login/SsoDecision.php'
+            - '../../src/Sso/Login/SsoDeniedException.php'
+
+
+    ElevateDxp\Sso\Identity\RoleMappingIdentityMapper:
+        arguments:
+            $groupsClaim: '%elevate_dxp_sso.groups_claim%'
+            $roleMapping: '%elevate_dxp_sso.role_mapping%'
+            $identifierClaim: '%elevate_dxp_sso.identifier_claim%'
+    ElevateDxp\Sso\Identity\IdentityMapperInterface: '@ElevateDxp\Sso\Identity\RoleMappingIdentityMapper'
+
+    # Public so a custom authenticator / controller in the app can fetch it.
+    ElevateDxp\Sso\Login\SsoLoginService:
+        public: true
+        arguments:
+            $enabled: '%elevate_dxp_sso.enabled%'
+            $jitProvisioning: '%elevate_dxp_sso.jit_provisioning%'
+
+    ElevateDxp\Sso\Admin\SsoMappingResource:
+        arguments:
+            $providers: '%elevate_dxp_sso.providers%'
+            $groupsClaim: '%elevate_dxp_sso.groups_claim%'
+            $identifierClaim: '%elevate_dxp_sso.identifier_claim%'
+            $enabled: '%elevate_dxp_sso.enabled%'
+            $jitProvisioning: '%elevate_dxp_sso.jit_provisioning%'

@@ -1,0 +1,60 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    ElevateDxp\Portal\:
+        resource: '../../src/Portal/*'
+        exclude:
+            - '../../src/Portal/DependencyInjection/'
+            - '../../src/Portal/Search/SearchQuery.php'
+            - '../../src/Portal/Search/SearchResult.php'
+            - '../../src/Portal/Search/NumericRange.php'
+            - '../../src/Portal/Search/Listing/ConditionBuilder.php'
+            - '../../src/Portal/Cart/ElementRef.php'
+            - '../../src/Portal/Admin/ShareTtl.php'
+
+    ElevateDxp\Portal\Controller\:
+        resource: '../../src/Portal/Controller/'
+        public: true
+        tags: ['controller.service_arguments']
+
+
+    ElevateDxp\Portal\Security\PortalPolicy:
+        arguments:
+            $allowedAssetPaths: '%elevate_dxp_portal.allowed_asset_paths%'
+
+    ElevateDxp\Portal\Cart\ZipBuilder:
+        arguments:
+            $objectImageField: '%elevate_dxp_portal.object_image_field%'
+
+    # --- search: pluggable backends (tag elevate_dxp_portal.search_backend), "listing" by default ---
+    ElevateDxp\Portal\Search\ListingSearchBackend:
+        arguments:
+            $config: '%elevate_dxp_portal.search%'
+            $allowedAssetPaths: '%elevate_dxp_portal.allowed_asset_paths%'
+
+    ElevateDxp\Portal\Search\PortalSearchService:
+        arguments:
+            $backends: !tagged_iterator elevate_dxp_portal.search_backend
+            $backendName: '%elevate_dxp_portal.search.backend%'
+            $defaultPageSize: '%elevate_dxp_portal.search.page_size%'
+            $maxPageSize: '%elevate_dxp_portal.search.max_page_size%'
+            $defaultClass: '%elevate_dxp_portal.products_class%'
+
+    ElevateDxp\Portal\Command\PortalSearchSmokeCommand:
+        arguments:
+            $defaultClass: '%elevate_dxp_portal.products_class%'
+
+    ElevateDxp\Portal\Admin\CollectionResource:
+        arguments:
+            $share: '%elevate_dxp_portal.share%'
+
+    ElevateDxp\Portal\Admin\ShareLinkResource:
+        arguments:
+            $share: '%elevate_dxp_portal.share%'
+
+    ElevateDxp\Portal\Twig\BrandingExtension:
+        arguments:
+            $branding: '%elevate_dxp_portal.branding%'

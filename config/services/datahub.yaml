@@ -1,0 +1,36 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    ElevateDxp\Datahub\:
+        resource: '../../src/Datahub/*'
+        exclude:
+            - '../../src/Datahub/DependencyInjection/'
+
+
+    # FieldMapperInterface comes from the core bundle (ReflectiveFieldMapper): no local duplicate.
+    ElevateDxp\Datahub\Provider\DataObjectProvider:
+        tags: [{ name: elevate_dxp_datahub.provider, type: data_object }]
+    ElevateDxp\Datahub\Provider\AssetProvider:
+        tags: [{ name: elevate_dxp_datahub.provider, type: asset }]
+
+    ElevateDxp\Datahub\Api\EndpointExecutor:
+        arguments:
+            $endpoints: '%elevate_dxp_datahub.endpoints%'
+            $providers: !tagged_locator { tag: elevate_dxp_datahub.provider, index_by: type }
+            $maxLimit: '%elevate_dxp_datahub.max_limit%'
+
+    ElevateDxp\Datahub\Controller\ApiController:
+        public: true
+        tags: ['controller.service_arguments']
+        arguments:
+            $enabled: '%elevate_dxp_datahub.enabled%'
+            $apiKeyHeader: '%elevate_dxp_datahub.api_key_header%'
+            $apiKey: '%elevate_dxp_datahub.api_key%'
+
+    ElevateDxp\Datahub\Admin\EndpointResource:
+        arguments:
+            $apiKeyHeader: '%elevate_dxp_datahub.api_key_header%'
+            $apiKeyConfigured: "@=parameter('elevate_dxp_datahub.api_key') != ''"

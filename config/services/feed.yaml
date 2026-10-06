@@ -1,0 +1,37 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    ElevateDxp\Feed\:
+        resource: '../../src/Feed/*'
+        exclude:
+            - '../../src/Feed/DependencyInjection/'
+            - '../../src/Feed/Template/FeedTemplateInterface.php'
+
+    ElevateDxp\Feed\Controller\:
+        resource: '../../src/Feed/Controller/'
+        public: true
+        tags: ['controller.service_arguments']
+
+
+    ElevateDxp\Feed\Template\GenericCsvTemplate:
+        tags: [{ name: elevate_dxp_feed.template, key: generic_csv }]
+    ElevateDxp\Feed\Template\GoogleMerchantTemplate:
+        tags: [{ name: elevate_dxp_feed.template, key: google_merchant }]
+
+    ElevateDxp\Feed\Runner\FeedRunner:
+        arguments:
+            $feeds: '%elevate_dxp_feed.feeds%'
+            $templates: !tagged_locator { tag: elevate_dxp_feed.template, index_by: key }
+            # Export bundle targets (local / asset / http), shared through its tag.
+            $targets: !tagged_locator { tag: elevate_dxp_export.target, index_by: key }
+            $chunkSize: '%elevate_dxp_feed.chunk_size%'
+            $enabled: '%elevate_dxp_feed.enabled%'
+
+    ElevateDxp\Feed\Controller\PublicFeedController:
+        public: true
+        tags: ['controller.service_arguments']
+        arguments:
+            $cache: '@?cache.app'

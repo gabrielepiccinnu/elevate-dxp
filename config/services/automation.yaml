@@ -1,0 +1,21 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    ElevateDxp\Automation\:
+        resource: '../../src/Automation/*'
+        exclude:
+            - '../../src/Automation/DependencyInjection/'
+
+
+    # Reads the webhook bundle configuration (ElevateDxpWebhookBundle is a dependent bundle).
+    ElevateDxp\Automation\N8n\N8nBlueprintGenerator:
+        arguments:
+            $webhookSubscriptions: '%elevate_dxp_webhook.subscriptions%'
+            $enabled: '%elevate_dxp_automation.enabled%'
+
+    ElevateDxp\Automation\Command\N8nExportCommand:
+        arguments:
+            $projectDir: '%kernel.project_dir%'

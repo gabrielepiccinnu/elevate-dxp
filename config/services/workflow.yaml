@@ -1,0 +1,27 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    ElevateDxp\Workflow\:
+        resource: '../../src/Workflow/*'
+        exclude:
+            - '../../src/Workflow/DependencyInjection/'
+            - '../../src/Workflow/Model/'
+            - '../../src/Workflow/Bpmn/BpmnNamespaces.php'
+
+
+    ElevateDxp\Workflow\Store\WorkflowYamlStore:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+            $storageDir: '%elevate_dxp_workflow.storage_dir%'
+
+    ElevateDxp\Workflow\Config\WorkflowConfigWriter:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+            $applyDir: '%elevate_dxp_workflow.apply_dir%'
+
+    ElevateDxp\Workflow\Admin\WorkflowResource:
+        arguments:
+            $mermaidRenderUrl: '%elevate_dxp_workflow.mermaid_render_url%'

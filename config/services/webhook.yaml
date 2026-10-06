@@ -1,0 +1,42 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    ElevateDxp\Webhook\:
+        resource: '../../src/Webhook/*'
+        exclude:
+            - '../../src/Webhook/Contract/'
+            - '../../src/Webhook/Exception/'
+            - '../../src/Webhook/Message/'
+            - '../../src/Webhook/Webhook/DeliveryResult.php'
+            - '../../src/Webhook/Webhook/WebhookEvents.php'
+            - '../../src/Webhook/Webhook/WebhookSignature.php'
+            - '../../src/Webhook/Webhook/TestPayload.php'
+            - '../../src/Webhook/DependencyInjection/'
+
+
+    ElevateDxp\Webhook\Webhook\SubscriptionRegistry:
+        arguments:
+            $subscriptions: '%elevate_dxp_webhook.subscriptions%'
+            $enabled: '%elevate_dxp_webhook.enabled%'
+
+    ElevateDxp\Webhook\Webhook\WebhookSender:
+        arguments:
+            $httpClient: '@GuzzleHttp\Client'
+            $timeout: '%elevate_dxp_webhook.timeout%'
+
+    ElevateDxp\Webhook\Webhook\WebhookDispatcher:
+        arguments:
+            $bus: '@messenger.default_bus'
+
+    ElevateDxp\Webhook\Contract\DeliveryRecorderInterface: '@ElevateDxp\Webhook\Repository\WebhookDeliveryRepository'
+
+    ElevateDxp\Webhook\Controller\WebhookSinkController:
+        public: true
+        tags: ['controller.service_arguments']
+        arguments:
+            $enabled: '%elevate_dxp_webhook.sink_enabled%'
+            $projectDir: '%kernel.project_dir%'
+            $secret: '%elevate_dxp_webhook.sink_secret%'

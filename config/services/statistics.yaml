@@ -1,0 +1,27 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    ElevateDxp\Statistics\:
+        resource: '../../src/Statistics/*'
+        exclude:
+            - '../../src/Statistics/DependencyInjection/'
+            # registered per configured report by the extension
+            - '../../src/Statistics/Admin/StatisticsReportResource.php'
+
+
+    ElevateDxp\Statistics\Report\ReportRunner:
+        arguments:
+            $reports: '%elevate_dxp_statistics.reports%'
+            $db: '@doctrine.dbal.default_connection'
+            $maxRows: '%elevate_dxp_statistics.max_rows%'
+
+    ElevateDxp\Statistics\Report\NativeReportSeeder:
+        arguments:
+            $reports: '%elevate_dxp_statistics.reports%'
+
+    ElevateDxp\Statistics\Admin\StatisticsReportsResource:
+        arguments:
+            $maxRows: '%elevate_dxp_statistics.max_rows%'

@@ -1,0 +1,44 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    ElevateDxp\Core\:
+        resource: '../../src/Core/*'
+        exclude:
+            - '../../src/Core/Dto/'
+            - '../../src/Core/Contract/'
+            - '../../src/Core/Admin/Field.php'
+            - '../../src/Core/Admin/Action.php'
+            - '../../src/Core/Admin/Abstract*.php'
+            - '../../src/Core/Installer/ModuleInstaller.php'
+            - '../../src/Core/Module/'
+            - '../../src/Core/DependencyInjection/'
+
+    ElevateDxp\Core\Controller\:
+        resource: '../../src/Core/Controller/'
+        public: true
+        tags: ['controller.service_arguments']
+
+    ElevateDxp\Core\Installer\Installer:
+        public: true
+        arguments:
+            $bundle: "@=service('kernel').getBundle('ElevateDxpBundle')"
+
+    ElevateDxp\Core\Security\DenyByDefaultAccessPolicy:
+        arguments:
+            $defaultPolicy: '%elevate_dxp_core.default_policy%'
+            $allowedActions: '%elevate_dxp_core.allowed_actions%'
+    ElevateDxp\Core\Contract\AccessPolicyInterface: '@ElevateDxp\Core\Security\DenyByDefaultAccessPolicy'
+
+    ElevateDxp\Core\Contract\FieldMapperInterface: '@ElevateDxp\Core\Mapper\ReflectiveFieldMapper'
+
+    ElevateDxp\Core\Audit\PsrAuditLogger:
+        arguments:
+            $enabled: '%elevate_dxp_core.audit_enabled%'
+            $logger: '@?logger'
+    ElevateDxp\Core\Audit\ApplicationLoggerAuditLogger:
+        arguments:
+            $enabled: '%elevate_dxp_core.audit_enabled%'
+    ElevateDxp\Core\Contract\AuditLoggerInterface: '@ElevateDxp\Core\Audit\ApplicationLoggerAuditLogger'

@@ -1,0 +1,11 @@
+parameters:
+    level: 6
+    paths:
+        - src
+        - tests
+    tmpDir: var/phpstan
+    treatPhpDocTypesAsCertain: false
+    ignoreErrors:
+        # Generated OpenDXP DataObject classes (e.g. DataObject\Product) only exist in an installed application.
+        - identifier: class.notFound
+          path: src/Portal/Search/Listing/ListingFactory.php

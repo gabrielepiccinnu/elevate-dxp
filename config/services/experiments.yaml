@@ -1,0 +1,70 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+        bind:
+            bool $enabled: '%elevate_dxp_experiments.enabled%'
+
+    ElevateDxp\Experiments\:
+        resource: '../../src/Experiments/*'
+        exclude:
+            - '../../src/Experiments/Model/'
+            - '../../src/Experiments/Message/'
+            - '../../src/Experiments/Targeting/Condition/'
+            - '../../src/Experiments/Analytics/'
+            - '../../src/Experiments/DependencyInjection/'
+
+
+    ElevateDxp\Experiments\Experiment\AssignmentStoreInterface: '@ElevateDxp\Experiments\Repository\AssignmentRepository'
+
+    ElevateDxp\Experiments\Visitor\CookieSigner:
+        arguments:
+            $secret: '%elevate_dxp_experiments.secret%'
+
+    ElevateDxp\Experiments\Visitor\VisitorIdResolver:
+        arguments:
+            $cookieName: '%elevate_dxp_experiments.cookie_name%'
+            $excludedPaths: '%elevate_dxp_experiments.excluded_paths%'
+            $consentCookie: '%elevate_dxp_experiments.consent_cookie%'
+
+    ElevateDxp\Experiments\Tracking\EventRecorder:
+        arguments:
+            $forwardToAnalytics: "@=parameter('elevate_dxp_experiments.analytics')['adapter'] !== 'none'"
+
+    ElevateDxp\Experiments\Controller\TrackController:
+        public: true
+        tags: ['controller.service_arguments']
+        arguments:
+            $cache: '@cache.app'
+            $config: '%elevate_dxp_experiments.tracking%'
+
+    ElevateDxp\Experiments\EventListener\ResponseSubscriber:
+        arguments:
+            $cookieTtlDays: '%elevate_dxp_experiments.cookie_ttl_days%'
+            $profileEnabled: '%elevate_dxp_experiments.profile_enabled%'
+            $injectRuntime: '%elevate_dxp_experiments.runtime_inject%'
+            $trackingEnabled: "@=parameter('elevate_dxp_experiments.tracking')['enabled']"
+
+    # Targeting extension points: referenced by service id from config/opendxp/config.yaml
+    ElevateDxp\Experiments\Targeting\ActionHandler\SetVariant:
+        public: true
+    ElevateDxp\Experiments\Targeting\DataProvider\ExperimentsDataProvider:
+        public: true
+    ElevateDxp\Experiments\Targeting\DataProvider\VisitorProfileDataProvider:
+        public: true
+
+    # Analytics adapters (selected by elevate_dxp_experiments.analytics.adapter)
+    ElevateDxp\Experiments\Analytics\MatomoAdapter:
+        arguments:
+            $url: "@=parameter('elevate_dxp_experiments.analytics')['matomo']['url']"
+            $siteId: "@=parameter('elevate_dxp_experiments.analytics')['matomo']['site_id']"
+            $token: "@=parameter('elevate_dxp_experiments.analytics')['matomo']['token']"
+    ElevateDxp\Experiments\Analytics\PostHogAdapter:
+        arguments:
+            $host: "@=parameter('elevate_dxp_experiments.analytics')['posthog']['host']"
+            $apiKey: "@=parameter('elevate_dxp_experiments.analytics')['posthog']['api_key']"
+
+    ElevateDxp\Experiments\MessageHandler\TrackedEventHandler:
+        arguments:
+            $adapter: "@=parameter('elevate_dxp_experiments.analytics')['adapter'] === 'matomo' ? service('ElevateDxp\\\\Experiments\\\\Analytics\\\\MatomoAdapter') : (parameter('elevate_dxp_experiments.analytics')['adapter'] === 'posthog' ? service('ElevateDxp\\\\Experiments\\\\Analytics\\\\PostHogAdapter') : null)"

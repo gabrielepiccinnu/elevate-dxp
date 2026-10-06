@@ -1,0 +1,33 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    ElevateDxp\Translation\:
+        resource: '../../src/Translation/*'
+        exclude:
+            - '../../src/Translation/DependencyInjection/'
+            - '../../src/Translation/Provider/TranslationProviderInterface.php'
+
+
+    # Providers are collected by key. Custom providers: implement TranslationProviderInterface and
+    # tag { name: elevate_dxp_translation.provider, key: <name> }.
+    ElevateDxp\Translation\Provider\PseudoProvider:
+        tags: [{ name: elevate_dxp_translation.provider, key: pseudo }]
+
+    ElevateDxp\Translation\Provider\LibreTranslateProvider:
+        arguments:
+            $httpClient: '@?http_client'
+            $config: '%elevate_dxp_translation.libretranslate%'
+        tags: [{ name: elevate_dxp_translation.provider, key: libretranslate }]
+
+    ElevateDxp\Translation\Provider\ProviderRegistry:
+        arguments:
+            $providers: !tagged_locator { tag: elevate_dxp_translation.provider, index_by: key }
+            $defaultProvider: '%elevate_dxp_translation.provider%'
+
+    ElevateDxp\Translation\Admin\TranslationProvidersResource:
+        arguments:
+            $languages: '%elevate_dxp_translation.languages%'
+            $libreTranslate: '%elevate_dxp_translation.libretranslate%'

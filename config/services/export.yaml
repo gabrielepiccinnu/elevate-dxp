@@ -1,0 +1,44 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    ElevateDxp\Export\:
+        resource: '../../src/Export/*'
+        exclude:
+            - '../../src/Export/Contract/'
+            - '../../src/Export/DependencyInjection/'
+            - '../../src/Export/Target/PathGuard.php'
+
+
+    # Renderers and targets are indexed by key; other bundles (feed) reuse the target locator.
+    ElevateDxp\Export\Renderer\CsvRenderer:
+        tags: [{ name: elevate_dxp_export.renderer, key: csv }]
+    ElevateDxp\Export\Renderer\JsonRenderer:
+        tags: [{ name: elevate_dxp_export.renderer, key: json }]
+    ElevateDxp\Export\Renderer\XmlRenderer:
+        tags: [{ name: elevate_dxp_export.renderer, key: xml }]
+
+    ElevateDxp\Export\Target\LocalFilesystemTarget:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+            $basePath: '%elevate_dxp_export.base_path%'
+        tags: [{ name: elevate_dxp_export.target, key: local }]
+    ElevateDxp\Export\Target\AssetTarget:
+        tags: [{ name: elevate_dxp_export.target, key: asset }]
+    ElevateDxp\Export\Target\HttpTarget:
+        arguments:
+            $httpClient: '@GuzzleHttp\ClientInterface'
+        tags: [{ name: elevate_dxp_export.target, key: http }]
+
+    ElevateDxp\Export\Contract\SourceReaderInterface: '@ElevateDxp\Export\Source\SourceReader'
+
+    ElevateDxp\Export\Runner\ExportRunner:
+        arguments:
+            $jobs: '%elevate_dxp_export.jobs%'
+            $chunkSize: '%elevate_dxp_export.chunk_size%'
+            $renderers: !tagged_locator { tag: elevate_dxp_export.renderer, index_by: key }
+            $targets: !tagged_locator { tag: elevate_dxp_export.target, index_by: key }
+            $enabled: '%elevate_dxp_export.enabled%'
+            $lockDir: '%elevate_dxp_export.lock_dir%'
