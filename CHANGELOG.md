@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed
+
+- Datahub: *GraphQL configurations* explains how to install `open-dxp/data-hub-bundle` when it is not enabled (new *Data Hub status* action); README documents the optional GraphQL Data Hub installation.
+
 ## [1.0.0] - 2026-10-07
 
 First release of Elevate DXP as a single bundle (`elevate-dxp/elevate-bundle`, `ElevateDxp\ElevateDxpBundle`) for OpenDXP ^1.4.

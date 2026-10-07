@@ -1,6 +1,8 @@
 # Datahub
 
-Exposes YAML-declared, read-only REST endpoints for OpenDXP data objects and assets, protected by a static API key. In the admin it also lists the native OpenDXP DataHub GraphQL configurations (`open-dxp/data-hub-bundle`) when that bundle is installed.
+Exposes YAML-declared, read-only REST endpoints for OpenDXP data objects and assets, protected by a static API key. In the admin it also lists the native OpenDXP Data Hub GraphQL configurations (`open-dxp/data-hub-bundle`).
+
+> The GraphQL API and the **Datahub** main menu come from `open-dxp/data-hub-bundle`, which Elevate DXP does not install. See [README → Optional: GraphQL Data Hub](../../README.md#7-optional-graphql-data-hub). Until it is enabled, *GraphQL configurations* shows a single row with the install command, and the *Data Hub status* action explains the steps.
 
 Config key: `elevate_dxp.datahub` · Permission: `elevate_dxp_datahub` · Admin menu: Elevate DXP → Integration
 
