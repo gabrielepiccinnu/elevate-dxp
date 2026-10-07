@@ -52,7 +52,7 @@ OpenDXP core and the free personalization bundle already provide rule-based pers
 | Database | MariaDB or MySQL, as supported by OpenDXP (MariaDB >= 10.3, MySQL >= 8.0) |
 | Symfony | 7.4 (`symfony/messenger`, `symfony/rate-limiter`, `symfony/http-client`) |
 
-Optional: `open-dxp/data-hub-bundle`. When installed, its GraphQL configurations are listed next to the REST endpoints.
+Optional: `open-dxp/data-hub-bundle` (GraphQL API, main menu **Datahub**). It is not installed by Elevate DXP; see [step 7](#7-optional-graphql-data-hub).
 
 ## Installation
 
@@ -134,6 +134,26 @@ location ~* ^(?!/admin|/asset/webdav|/elevate-dxp/)(.+?)\.((?:css|js)(?:\.map)?|
 ```
 
 Only the `(?!...)` lookahead changes; keep the rest of the block as it is. Apache with the skeleton `.htaccess` needs no change.
+
+### 7. Optional: GraphQL Data Hub
+
+Elevate DXP ships **REST** endpoints (*Elevate DXP → Integration → REST endpoints*). The **GraphQL** API and the **Datahub** main menu belong to the official, free `open-dxp/data-hub-bundle`, which is a separate package:
+
+```bash
+composer require open-dxp/data-hub-bundle
+```
+
+```php
+// config/bundles.php
+OpenDxp\Bundle\DataHubBundle\OpenDxpDataHubBundle::class => ['all' => true],
+```
+
+```bash
+bin/console opendxp:bundle:install OpenDxpDataHubBundle
+bin/console cache:clear
+```
+
+Log in again: the **Datahub** menu appears and its GraphQL configurations are also listed in *Elevate DXP → Integration → GraphQL configurations* (with endpoint and API-key status). Without the bundle that panel shows how to install it, and its *Data Hub status* action explains the steps.
 
 ## 5-minute quickstart
 

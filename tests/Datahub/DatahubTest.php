@@ -252,15 +252,29 @@ final class DatahubTest extends TestCase
         self::assertNull($resource->get('missing'));
     }
 
-    public function testGraphqlResourceDefaultLoaderUsesDataHubWhenInstalled(): void
+    public function testGraphqlResourceExplainsHowToInstallWhenDataHubIsNotEnabled(): void
     {
-        if (!class_exists(GraphqlConfigurationResource::DATAHUB_CONFIGURATION)) {
-            self::assertSame(['data' => [], 'total' => 0], (new GraphqlConfigurationResource())->list([]));
+        $resource = new GraphqlConfigurationResource(null, []);
+        self::assertFalse($resource->isDataHubEnabled());
 
-            return;
+        $list = $resource->list([]);
+        self::assertSame(1, $list['total']);
+        self::assertSame('Data Hub bundle not enabled', $list['data'][0]['name']);
+        self::assertStringContainsString('composer require open-dxp/data-hub-bundle', (string) $list['data'][0]['endpoint']);
+
+        $status = $resource->runAction('status', null, []);
+        self::assertStringContainsString('opendxp:bundle:install OpenDxpDataHubBundle', (string) ($status['text'] ?? ''));
+    }
+
+    public function testGraphqlResourceIsEnabledOnlyWithTheBundleRegistered(): void
+    {
+        $registered = new GraphqlConfigurationResource(null, [GraphqlConfigurationResource::DATAHUB_BUNDLE => 'OpenDxp\\Bundle\\DataHubBundle\\OpenDxpDataHubBundle']);
+        self::assertSame(class_exists(GraphqlConfigurationResource::DATAHUB_CONFIGURATION), $registered->isDataHubEnabled());
+        if ($registered->isDataHubEnabled()) {
+            // The default loader calls Configuration::getList() statically.
+            self::assertTrue((new \ReflectionMethod(GraphqlConfigurationResource::DATAHUB_CONFIGURATION, 'getList'))->isStatic());
+            self::assertStringContainsString('enabled', (string) ($registered->runAction('status', null, [])['message'] ?? ''));
         }
-        // The default loader calls Configuration::getList() statically.
-        self::assertTrue((new \ReflectionMethod(GraphqlConfigurationResource::DATAHUB_CONFIGURATION, 'getList'))->isStatic());
     }
 }
 

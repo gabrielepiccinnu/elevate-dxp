@@ -5,24 +5,36 @@ declare(strict_types=1);
 namespace ElevateDxp\Datahub\Admin;
 
 use ElevateDxp\Core\Admin\AbstractAdminResource;
+use ElevateDxp\Core\Admin\Action;
 use ElevateDxp\Core\Admin\Field;
 use ElevateDxp\Datahub\Installer\DatahubInstaller;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 /**
- * Read-only list of the native OpenDXP DataHub configurations (open-dxp/data-hub-bundle),
- * the primary headless API. Empty when the DataHub bundle is not installed. Secrets (API keys)
- * are never exposed; only whether one is configured.
+ * Read-only list of the native OpenDXP Data Hub configurations (open-dxp/data-hub-bundle),
+ * the GraphQL headless API. When the Data Hub bundle is not enabled, the grid shows a single
+ * row explaining how to install it. Secrets (API keys) are never exposed; only whether one is set.
  */
 final class GraphqlConfigurationResource extends AbstractAdminResource
 {
     public const DATAHUB_CONFIGURATION = 'OpenDxp\\Bundle\\DataHubBundle\\Configuration';
+    public const DATAHUB_BUNDLE = 'OpenDxpDataHubBundle';
+    public const INSTALL_HINT = 'composer require open-dxp/data-hub-bundle, register OpenDxp\\Bundle\\DataHubBundle\\OpenDxpDataHubBundle in config/bundles.php, then bin/console opendxp:bundle:install OpenDxpDataHubBundle';
 
     /** @var \Closure(): iterable<object> */
     private readonly \Closure $loader;
 
-    /** @param (\Closure(): iterable<object>)|null $loader test seam; defaults to Configuration::getList() */
-    public function __construct(?\Closure $loader = null)
-    {
+    private readonly bool $dataHubEnabled;
+
+    /**
+     * @param (\Closure(): iterable<object>)|null $loader        test seam; defaults to Configuration::getList()
+     * @param array<string, string>               $kernelBundles bundle name => class, to detect the Data Hub bundle
+     */
+    public function __construct(
+        ?\Closure $loader = null,
+        #[Autowire('%kernel.bundles%')] array $kernelBundles = [],
+    ) {
+        $this->dataHubEnabled = $loader !== null || (isset($kernelBundles[self::DATAHUB_BUNDLE]) && class_exists(self::DATAHUB_CONFIGURATION));
         $this->loader = $loader ?? static function (): iterable {
             if (!class_exists(self::DATAHUB_CONFIGURATION)) {
                 return [];
@@ -74,8 +86,26 @@ final class GraphqlConfigurationResource extends AbstractAdminResource
                 Field::text('endpoint', 'Endpoint', ['readOnly' => true, 'flex' => 2]),
                 Field::text('description', 'Description', ['readOnly' => true, 'grid' => false]),
             ],
-            'actions' => [],
+            'actions' => [
+                Action::global('status', 'Data Hub status', ['iconCls' => 'opendxp_icon_info']),
+            ],
         ];
+    }
+
+    public function isDataHubEnabled(): bool
+    {
+        return $this->dataHubEnabled;
+    }
+
+    public function runAction(string $action, ?string $id, array $params): array
+    {
+        if ($action !== 'status') {
+            return parent::runAction($action, $id, $params);
+        }
+
+        return $this->dataHubEnabled
+            ? Action::message('The OpenDXP Data Hub bundle is enabled. Create and edit GraphQL configurations in the main menu "Datahub".')
+            : Action::text("The OpenDXP Data Hub bundle (GraphQL) is not enabled.\n\nTo enable it:\n  ".str_replace(', ', "\n  ", self::INSTALL_HINT)."\n\nThe Elevate DXP REST endpoints work without it.", 'Data Hub status');
     }
 
     public function list(array $query): array
@@ -97,6 +127,17 @@ final class GraphqlConfigurationResource extends AbstractAdminResource
     /** @return list<array<string,mixed>> */
     private function rows(): array
     {
+        if (!$this->dataHubEnabled) {
+            return [[
+                'name' => 'Data Hub bundle not enabled',
+                'type' => '-',
+                'group' => '',
+                'active' => false,
+                'apiKeyConfigured' => false,
+                'endpoint' => self::INSTALL_HINT,
+                'description' => 'Install open-dxp/data-hub-bundle to create GraphQL APIs; see the "Data Hub status" action.',
+            ]];
+        }
         $rows = [];
         foreach (($this->loader)() as $config) {
             $rows[] = self::toRow($config);
