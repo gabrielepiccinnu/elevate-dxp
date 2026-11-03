@@ -16,7 +16,7 @@
         "open-dxp/admin-bundle": "^1.4",
         "open-dxp/opendxp": "^1.4",
         "open-dxp/personalization-bundle": "^1.0",
-        "symfony/http-client": "^7.4",
+        "symfony/http-client": "^8.1",
         "symfony/messenger": "^7.4",
         "symfony/rate-limiter": "^7.4",
         "symfony/yaml": "^7.4",
